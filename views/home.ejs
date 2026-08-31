@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.68)),
+          url("./images/backround-image.jpeg");
+        background-size: cover;
+        background-position: center 20%;
+        background-attachment: fixed;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      .hero {
+        height: 20px;
+        min-height: 430px;
+        display: flex;
+        align-items: center;
+        padding: 70px 0;
+        position: relative;
+      }
+      .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4.5rem);
+        font-weight: 800;
+        line-height: 1.05;
+        color: #17202a;
+      }
+      .hero-title span {
+        background: linear-gradient(90deg, #6f42c1, #0d6efd, #20c997);
+        background-clip: border-box;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero-subtitle {
+        font-size: 1.15rem;
+        color: #5f6368;
+        max-width: 600px;
+      }
+      .map-wrapper {
+        position: relative;
+        width: 100%;
+      }
+      #map-area {
+        width: 100%;
+        height: 360px;
+        border-radius: 25px;
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(202, 168, 168, 0.8);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(8px);
+        overflow: hidden;
+      }
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+      .map-label {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+     .section-title {
+        font-weight: 800;
+        color: #212529;
+      }
+      .section-subtitle {
+        color: #6c757d;
+      }
+      /* =========================
+        DISCOVERY CARDS
+      ========================== */
+      .discovery-card {
+        border: none;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease;
+        height: 100%;
+      }
+      .discovery-card:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+      }
+      .discovery-icon {
+        width: 55px;
+        height: 55px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        font-size: 1.5rem;
+        background: #f1f3f5;
+        margin-bottom: 15px;
+      }
+      /* =========================
+        TOP PICKS
+      ========================== */
+      .pick-card {
+        border: none;
+        border-radius: 22px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: 0.25s;
+      }
+      .pick-card:hover {
+        transform: translateY(-6px);
+      }
+      .pick-image {
+        height: 180px;
+        width: 100%;
+        object-fit: cover;
+      }
+      /* =========================
+        SOCIAL FEED
+      ========================== */
+      .feed-card {
+        max-width: 700px;
+        margin: auto;
+        border: none;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+      }
+      /* =========================
+        FOOTER
+      ========================== */
+      footer {
+        margin-top: 80px;
+        padding: 35px 0;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    </style>
+
+    
+    <%- include('./partials/head') %>
+    <title>SEQ'S Surroundings</title>
+  </head>
+  <body>
+    <%- include('./partials/nav') %>
+    <div class="container-fluid mt-3">
+      <h1 align="center">শহরে'what's UP!!!</h1>
+    </div>
+      <!-- =========================================
+          HERO + MAP
+      ========================================= -->
+      <section class="hero">
+        <div class="container">
+          <div class="row align-items-center g-5">
+            <!-- LEFT -->
+            <div class="col-lg-6">
+              <span
+                class="badge rounded-pill text-bg-light shadow-sm mb-3 px-3 py-2"
+              >
+                ✨ Discover your city
+              </span>
+              <h1 class="hero-title">
+                What's happening
+                <span>right now?</span>
+              </h1>
+              <p class="hero-subtitle mt-4">
+                Discover buzzing places, local events, hidden gems and what's
+                happening around you — all in one place.
+              </p>
+              <div class="mt-4 d-flex flex-wrap justify-content-center gap-2">
+                <a
+                  href="/user-posts/happening-now"
+                  class="btn btn-dark rounded-pill px-4 py-2"
+                >
+                  🔥 Explore What's Happening
+                </a>
+                <a
+                  href="#top-picks"
+                  class="btn btn-outline-dark rounded-pill px-4 py-2"
+                >
+                  ✨ Our Picks
+                </a>
+                <a
+                  href="/businesses/this-week"
+                  class="btn btn-outline-dark rounded-pill px-4 py-2"
+                >
+                  🔥 Explore What's Coming Up
+                </a>
+              </div>
+            </div>
+
+            <!-- RIGHT — LEAFLET MAP -->
+            <div class="col-lg-6">
+              <div class="map-wrapper">
+                <div class="map-label">📍 Around You</div>
+                <div id="map-area">
+                  <div id="map"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================
+          DISCOVERY CATEGORIES
+      ========================================= -->
+
+      <section class="py-5">
+        <div class="container">
+          <div class="text-center mb-5">
+            <h2 class="section-title">Explore what's around you</h2>
+            <p class="section-subtitle">Something for every mood.</p>
+          </div>
+          <div class="row g-4">
+            <!-- MUSIC -->
+            <div class="col-6 col-md-4 col-lg-2">
+              <div class="card discovery-card p-4 text-center">
+                <div class="discovery-icon mx-auto">🎵</div>
+                <h6><a href="/businesses/this-week" class="text-dark text-decoration-none">Music</a></h6>
+                <small class="text-muted"> Live & trending </small>
+              </div>
+            </div>
+
+            <!-- FOOD -->
+            <div class="col-6 col-md-4 col-lg-2">
+              <div class="card discovery-card p-4 text-center">
+                <div class="discovery-icon mx-auto">🍔</div>
+                <h6><a href="/businesses/this-week" class="text-dark text-decoration-none">Restaurants</a></h6>
+                <small class="text-muted"> Places to eat </small>
+              </div>
+            </div>
+
+            <!-- BARS -->
+
+            <div class="col-6 col-md-4 col-lg-2">
+              <div class="card discovery-card p-4 text-center">
+                <div class="discovery-icon mx-auto">🍹</div>
+                <h6><a href="/businesses/this-week" class="text-dark text-decoration-none">Bars</a></h6>
+                <small class="text-muted"> What's buzzing </small>
+              </div>
+            </div>
+
+            <!-- GYM -->
+
+            <div class="col-6 col-md-4 col-lg-2">
+              <div class="card discovery-card p-4 text-center">
+                <div class="discovery-icon mx-auto">🏋️</div>
+                <h6><a href="/businesses/this-week" class="text-dark text-decoration-none">Fitness</a></h6>
+                <small class="text-muted"> Stay active </small>
+              </div>
+            </div>
+
+            <!-- SHOPPING -->
+
+            <div class="col-6 col-md-4 col-lg-2">
+              <div class="card discovery-card p-4 text-center">
+                <div class="discovery-icon mx-auto">🛍️</div>
+                <h6><a href="/businesses/this-week" class="text-dark text-decoration-none">Shopping</a></h6>
+                <small class="text-muted"> Find something </small>
+              </div>
+            </div>
+
+            <!-- EVENTS -->
+            <div class="col-6 col-md-4 col-lg-2">
+              <div class="card discovery-card p-4 text-center">
+                <div class="discovery-icon mx-auto">🎉</div>
+                <h6><a href="/businesses/this-week" class="text-dark text-decoration-none">Events</a></h6>
+                <small class="text-muted"> Happening soon </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================
+          OUR TOP PICKS
+      ========================================= -->
+
+      <section id="top-picks" class="py-5">
+        <div class="container">
+          <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+              <span class="text-primary fw-semibold"> ✨ Curated for you </span>
+              <h2 class="section-title mb-0">Our Top Picks</h2>
+            </div>
+            <a href="/our-top-picks" class="btn btn-outline-dark rounded-pill"> See all </a>
+          </div>
+
+          <div class="row g-4">
+            <!-- PICK -->
+            <div class="col-md-4">
+              <div class="card pick-card">
+                <img src="/images/ourTopPicks/dulhouse_2.jpg" class="pick-image" />
+                <div class="card-body">
+                  <span class="badge text-bg-warning mb-2"> 🔥 Trending </span>
+                  <h5>Hidden Gems of The City</h5>
+
+                  <p class="text-muted mb-2">
+                    A cozy place everyone's talking about.
+                  </p>
+                  <small> ⭐ 4.8 · 📍 Nearby </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- PICK -->
+
+            <div class="col-md-4">
+              <div class="card pick-card">
+                <img src="/images/ourTopPicks/gazeebo.webp" class="pick-image" />
+                <div class="card-body">
+                  <span class="badge text-bg-success mb-2"> 🟢 Live </span>
+                  <h5>Weekend Live Music</h5>
+                  <p class="text-muted mb-2">
+                    Music, food and a great crowd tonight.
+                  </p>
+                  <small> 🎵 Tonight · 📍 Nearby </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- PICK -->
+
+            <div class="col-md-4">
+              <div class="card pick-card">
+                <img src="/images/ourTopPicks/kumortuli_2.avif" class="pick-image" />
+                <div class="card-body">
+                  <span class="badge text-bg-danger mb-2">
+                    ❤️ Recommended
+                  </span>
+                  <h5>Sunday Street Market</h5>
+                  <p class="text-muted mb-2">
+                    Local shops, food and little surprises.
+                  </p>
+                  <small> 🛍️ This weekend · 📍 Nearby </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================
+          SOCIAL FEED
+      ========================================= -->
+
+      <section class="py-5">
+        <div class="container">
+          <!-- Section Header -->
+          <div class="text-center mb-5">
+            <span class="text-primary fw-semibold">
+              👀 What's happening?
+            </span>
+            <h2 class="display-6 fw-bold mt-2">
+              What's Happening Right Now
+            </h2>
+            <p class="text-muted mx-auto" style="max-width: 600px;">
+              See what people around the city are experiencing,
+              discovering and sharing right now.
+            </p>
+          </div>
+          <div class="row g-4 justify-content-center">
+            <% latestPosts.forEach(post => { %>
+              <div class="col-lg-4 col-md-6">
+                <div
+                  class="card h-100 border-0 shadow-sm overflow-hidden"
+                  style="
+                    border-radius: 22px;
+                    transition: transform .25s ease, box-shadow .25s ease;
+                  "
+                >
+                  <div class="card-body pb-2">
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="rounded-circle d-flex align-items-center justify-content-center"
+                        style="
+                          width: 45px;
+                          height: 45px;
+                          background: linear-gradient(135deg,#e8f0ff,#f8f9fa);
+                          font-size: 20px;
+                        "
+                      >
+                        👤
+                      </div>
+                      <div class="ms-3">
+                        <div class="fw-semibold">
+                          <%= post.createdBy.fullName %>
+                        </div>
+                        <div class="text-muted small">
+                          📍 <%= post.location %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <% if (post.coverImageURL) { %>
+                    <img
+                      src="<%= post.coverImageURL %>"
+                      class="w-100"
+                      style="height:230px; object-fit:cover;"
+                    >
+                  <% } else { %>
+                    <div
+                      class="d-flex align-items-center justify-content-center"
+                      style="
+                        height:180px;
+                        background:linear-gradient(135deg,#eef3ff,#f8f9fa);
+                        font-size:45px;
+                      "
+                    >
+                      📍
+                    </div>
+                  <% } %>
+                  <div class="card-body">
+                    <h5 class="fw-bold mb-2">
+                      <%= post.title %>
+                    </h5>
+                    <p class="text-muted mb-3">
+                      <%= post.content %>
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="badge rounded-pill text-bg-light">
+                        📍 <%= post.location %>
+                      </span>
+                      <small class="text-muted">
+                        <%= post.createdAt.toDateString() %>
+                      </small>
+                    </div>
+                  </div>
+                  <div
+                    class="card-footer bg-white border-0 pt-0 pb-3 px-3"
+                  >
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-light rounded-pill flex-grow-1">
+                        ❤️ Like
+                      </button>
+                      <button class="btn btn-light rounded-pill flex-grow-1">
+                        💬 Comment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+          <div class="text-center mt-5">
+            <p class="text-muted mb-3">
+              Want to see what's happening across the city?
+            </p>
+            <a
+              href="/user-posts/happening-now"
+              class="btn btn-dark rounded-pill px-4 py-2"
+            >
+              Explore All Posts →
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================
+          FOOTER
+      ========================================= -->
+      <footer>
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h5 class="fw-bold mb-1">🌆 Local Discovery</h5>
+              <small class="text-muted">
+                Discover what's happening around you.
+              </small>
+            </div>
+
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+              <a href="#" class="text-decoration-none text-muted me-3">
+                About
+              </a>
+              <a href="#" class="text-decoration-none text-muted me-3">
+                Businesses
+              </a>
+              <a href="#" class="text-decoration-none text-muted"> Contact </a>
+            </div>
+          </div>
+          <hr />
+          <div class="text-center text-muted small">
+            © <%= new Date().getFullYear() %> Local Discovery · Made for your
+            city ❤️
+          </div>
+        </div>
+      </footer>
+    <%- include("./partials/chatbot") %>
+    <%- include('./partials/scripts') %>
+  </body>
+</html>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Leaflet JavaScript -->
+<script>
+  // Your Map JavaScript
+  var map = L.map("map").setView([22.636, 88.412], 14); // Create map
+
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // Add OpenStreetMap tiles
+    attribution: "powered by - Arindam@S",
+  }).addTo(map);
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 200);
+  L.marker([22.636, 88.412]) // Add marker
+    .addTo(map)
+    .bindPopup("Dum Dum", { autoClose: false })
+    .openPopup();
+  L.marker([22.6465, 88.4239]) // Add marker
+    .addTo(map)
+    .bindPopup("Dhopa Pukur")
+    .openPopup();
+</script>

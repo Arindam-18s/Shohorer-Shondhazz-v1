@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      body {
+              min-height: 100vh;
+              background: linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.50)), url("/images/backround-image.jpeg");
+              background-size: cover;
+              background-position: center 20%;
+              background-attachment: fixed;
+          }
+      .cards-stack {
+        position: fixed;
+        top: 150px;        /* match whatever top offset your map uses, for visual alignment */
+        left: 20px;
+        width: 1030px;       /* fixed column width — tweak to taste */
+        height: calc(100vh - 170px); /* fills remaining viewport height below the top offset */
+        overflow-y: auto;   /* THIS is what makes it scroll independently, like a stack */
+        overflow-x: hidden;   /* <-- add this: clips anything that overflows horizontally */
+        padding-right: 10px;
+        box-sizing: border-box; 
+      }
+      .cards-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr; /* 2 equal columns */
+        gap: 16px;
+        align-items: start; /* prevents cards from stretching to match tallest neighbor */
+      }
+      .card {
+        max-width: 330px;
+        margin: 0 auto;
+      }
+      .card-img-top {
+        height: 250px;
+        object-fit: cover;
+      }
+      .list-group-item.offers{
+        background-color: rgba(54, 37, 184, 0.203); 
+        border: 1px solid rgb(229, 74, 74);
+      }
+      .map-box {
+        width: 30%;
+        max-width: 500px;
+        height: 450px;
+        border: 2px solid black;
+        position: fixed;
+        top: 150px;
+        right: 20px; /* pins it to the right edge of the screen */
+      }
+      #map {
+        height: 445px;
+        width: 100%;
+      }
+      .location-badge {
+        white-space: normal;     /* allow wrapping instead of forcing one line */
+        overflow: visible;       /* stop clipping/hiding overflow content */
+        text-overflow: unset;    /* remove any "..." truncation behavior */
+        word-wrap: break-word;   /* break long words if they don't fit */
+        max-width: 100%;
+        display: inline-block;
+        text-align: left;
+      }
+    </style>
+    <%- include('./partials/head') %>
+    <title>SEQ'S Surroundings</title>
+  </head>
+  <body>
+    <%- include('./partials/nav') %>
+    <div class="container-fluid mt-2"><h3 align="center">New Places for শহরের-Peeps Can Hop-Onto 😃🦉</h3></div>
+      
+    <div class="cards-stack">
+      <div class="cards-grid">
+      <% businesses.forEach(business => { %>
+        <div class="card mb-3" style="background-color: rgba(177, 212, 223, 0.571); border: 1px solid rgb(229, 74, 74);">
+          <img src="<%= business.businessPicture %>" class="card-img-top" style="border: 2px solid rgb(23, 188, 149);"alt="...">
+          <div class="card-body">
+            <h5 class="card-title"><b>Business name</b> : <%= business.businessName.fullName %></h5>
+            <p class="card-text"><b> > About</b> : <%= business.businessType %></p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><b>KnowHow</b> : <%= business.businessDescription %></li>
+            <li class="list-group-item offers"><b>Offers</b> : <%= business.offers %></li>
+            <li class="list-group-item">
+              <b>offers last until :</b>
+              <% 
+                const expiryDate = new Date(business.createdAt);
+                expiryDate.setDate(expiryDate.getDate() + 7);
+              %>
+              <%= expiryDate.toDateString() %> Hurry!
+            </li>
+          </ul>
+          <div class="card-body">
+            <span class="badge rounded bg-primary location-badge">
+              📍 <%= business.location.address || `${business.location.lat.toFixed(4)}, ${business.location.lng.toFixed(4)}` %>
+            </span>
+          </div>
+        </div>
+      <% }) %>
+      </div>
+    </div>
+        
+
+    <% if (locals.user && user.role === "BUSINESS") { %>
+    <div class="position-fixed bottom-0 end-0 p-4" style="position: relative; z-index: 10001;">
+        <!-- Toggle Button -->
+        <button
+          class="btn btn-primary rounded-pill shadow"
+          data-bs-toggle="collapse"
+          data-bs-target="#postBox"
+          id="postButton"
+        >
+          ✚ ADD EVENT
+        </button>
+
+        <!-- Floating Form -->
+        <div class="collapse mt-3" id="postBox">
+          <div class="card shadow" style="width: 350px">
+            <div class="card-header d-flex justify-content-between">
+              <span> Add New Event </span>
+              <button
+                class="btn-close"
+                data-bs-toggle="collapse"
+                data-bs-target="#postBox"
+              ></button>
+            </div>
+
+            <div class="card-body">
+              <form action="/businesses" method="post" enctype="multipart/form-data">
+                <input class="form-control mb-2" placeholder="Busisness Type" id="businessType" name="businessType"/>
+                <textarea class="form-control mb-2" rows="3" placeholder="Description Of what to Schedule !!" id="businessDescription" name="businessDescription"></textarea>
+                <input class="form-control mb-2" placeholder="Mention Special Offers.,(If any) " id="offers" name="offers"/>
+                <label class="form-label mb-2">Pick a location</label>     <!-- Map picker -->
+                <div id="location-picker-map" style="height: 300px; border-radius: 10px;"></div>
+                <small class="text-muted mb-2" id="location-hint">Click on the map to set your post's location</small>
+                <input type="hidden" name="lat" id="lat-input" required>    <!-- These get filled in by JS, not typed by the user -->
+                <input type="hidden" name="lng" id="lng-input" required>
+                <input class="form-control mb-3" type="file" id="businessPicture" name="businessPicture"/>
+                <button class="btn btn-success w-100">LIST NEW EVENT</button>
+              </form>
+            </div>
+          </div>
+        </div>
+  </div>
+  <% } %>
+    <div class="container-fluid mt-4">
+      <!-- Map container -->
+      <div class="map-box">
+        <div id="map">
+          <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>     <!-- Leaflet JavaScript -->
+          <script>            // Your Map JavaScript
+
+              const businessLocations = <%- JSON.stringify(
+                businesses
+                  .filter(b => b.location && b.location.lat && b.location.lng)
+                  .map(b => ({
+                    id: b._id,
+                    lat: b.location.lat,
+                    lng: b.location.lng,
+                    name: b.businessType,
+                    address: b.location.address || null,
+                  }))
+              ) %>;
+              const map = L.map('map').setView([22.60, 88.37], 12); // default center
+
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '@Arindam-S',
+              }).addTo(map);
+
+              businessLocations.forEach(loc => {
+                const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+                marker.bindPopup(`<strong>${loc.name}</strong><br>${loc.address || `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`}`);
+              });
+
+            // L.marker([22.636, 88.412])                  // Add marker
+            //   .addTo(map)
+            //   .bindPopup("Dum Dum", { autoClose: false})
+            //   .openPopup();
+            // L.marker([22.6465, 88.4239])                  // Add marker
+            //   .addTo(map)
+            //   .bindPopup("Dhopa Pukur")
+            //   .openPopup();
+          </script>
+        </div>
+      </div>
+    </div>
+    <%- include("./partials/chatbot") %>
+    <%- include('./partials/scripts') %>
+  </body>
+</html>
+
+<script>
+  // Center the map somewhere sensible as a default (e.g. your city, or user's browser geolocation)
+  const pickerMap = L.map('location-picker-map').setView([22.5726, 88.3639], 12); // Kolkata as example default
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '@Arindam-S',
+  }).addTo(pickerMap);
+
+  let marker; // keep a reference so we can move it instead of stacking new ones
+
+  pickerMap.on('click', function (e) {
+    const { lat, lng } = e.latlng;
+
+    // Fill the hidden inputs so they get submitted with the form
+    document.getElementById('lat-input').value = lat;
+    document.getElementById('lng-input').value = lng;
+
+    // Move existing marker, or create one if this is the first click
+    if (marker) {
+      marker.setLatLng(e.latlng);
+    } else {
+      marker = L.marker(e.latlng).addTo(pickerMap);
+    }
+
+    document.getElementById('location-hint').textContent =
+      `Location set: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  });
+
+  const createPostBox = document.getElementById('postBox'); // match your real toggle wrapper's ID
+  createPostBox.addEventListener('shown.bs.collapse', function () {
+    pickerMap.invalidateSize();
+  });
+</script>

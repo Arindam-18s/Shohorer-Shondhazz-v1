@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head') %>
+    <style>
+        body {
+          margin: 0;
+          min-height: 100vh;
+          background-image:
+            linear-gradient(rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.68)),
+            url("/images/backround-image.jpeg");
+          background-size: cover;
+          background-position: center 20%;
+          background-attachment: fixed;
+          font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+        }
+    </style>
+    <title>শহরে Signup</title>
+  </head>
+  <body>
+    <%- include('./partials/nav') %>
+    <div class="container-fluid mt-4">
+      <h1 align="center">Let's Sign'ya up..শহর's waitin'!!!</h1>
+    </div>
+
+    <div class="container d-flex justify-content-center align-items-center" style="height:calc(100vh - 40vh);">
+      <form class="w-50" action="/user/signup" method="post">
+        <!-- Role -->
+        <div class="mb-3">
+          <label class="form-label"><h5>Register as</h5></label>
+
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="role"
+              id="user"
+              value="USER"
+              checked
+            />
+            <label class="form-check-label" for="user"><b> User </b></label>
+          </div>
+
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="role"
+              id="business"
+              value="BUSINESS"
+            />
+            <label class="form-check-label" for="business"><b> Business </b></label>
+          </div>
+        </div>
+
+        <!-- Dynamic Field -->
+        <div class="mb-3">
+          <label id="nameLabel" class="form-label"> Username </label>
+
+          <input
+            type="text"
+            class="form-control"
+            id="fullName"
+            name="fullName"
+            placeholder="Enter username"
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" id="email" name="email" class="form-control" placeholder="example@gmail.com"/>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="text" id="password" name="password" class="form-control" placeholder="xxx-...-xxx"/>
+        </div>
+
+        <button class="btn btn-primary">Register</button>
+      </form>
+    </div>
+
+    <%- include("./partials/chatbot") %>
+    <%- include('./partials/scripts') %>
+  </body>
+</html>
+
+<script>        // for dynamicaly changing the username entering fields for normal users and businesses
+  const userRadio = document.getElementById("user");
+  const businessRadio = document.getElementById("business");
+
+  const label = document.getElementById("nameLabel");
+  const input = document.getElementById("fullName");
+
+  userRadio.addEventListener("change", () => {
+    label.innerText = "Username";
+    input.placeholder = "Enter username";
+  });
+
+  businessRadio.addEventListener("change", () => {
+    label.innerText = "Business Name";
+    input.placeholder = "Enter business name";
+  });
+  
+</script>

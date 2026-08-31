@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head') %>
+    <style>
+      body{
+        margin: 0;
+        min-height: 100vh;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.68)),
+          url("/images/backround-image.jpeg");
+        background-size: cover;
+        background-position: center 20%;
+        background-attachment: fixed;
+      }
+    </style>
+    <title>শহরে Signin</title>
+  </head>
+  <body>
+    <%- include('./partials/nav') %>
+    <div class="container-fluid mt-4">
+      <h1 align="center">Woah..woah. Signin Now.. শহর's Buzzin!!!</h1>
+    </div>
+
+    <div class="container d-flex justify-content-center align-items-center" style="height:calc(100vh - 60vh);">
+      <form class="w-50" action="/user/signin" method="post">
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label"><b>Email</b></label>
+          <input type="email" id="email" name="email" class="form-control" placeholder="example@gmail.com"/>
+        </div>
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label"><b>Password</b></label>
+          <input type="text" id="password" name="password" class="form-control" placeholder="xxx-...-xxx"/>
+        </div>
+        <button class="btn btn-primary">Sign In</button><br>
+          <div class="d-flex justify-content-end align-items-center gap-3 mt-4 pe-1">
+            <span class="fw-bold">Don't have an Account?</span>
+            <a href="/user/signup" class="btn btn-outline-primary">Sign Up</a>
+        </div>
+      </form>
+    </div>
+
+    <%- include("./partials/chatbot") %>
+    <%- include('./partials/scripts') %>
+  </body>
+</html>
+

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+        body {
+              min-height: 100vh;
+              background: linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.50)), url("/images/backround-image.jpeg");
+              background-size: cover;
+              background-position: center 20%;
+              background-attachment: fixed;
+          }
+        .post-feed {
+          width: 90%;         /* takes up 90% of viewport width */
+          max-width: 1000px;
+          margin: 0 auto;
+          position: fixed;
+          top: 130px;
+          left: 50%;
+          transform: translateX(-50%); /* keeps it perfectly centered since it's no longer in normal document flow */
+          height: calc(100vh - 40px);  /* fills the viewport height, minus a little top/bottom breathing room */
+          overflow-y: auto;
+          padding-right: 1px; /* small gutter so the scrollbar doesn't sit flush against card edges */
+        }
+        .post-card {
+            border-radius: 25px;
+            overflow: hidden;
+        }
+        /* user profile circle */
+        .profile-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #d1d1d1;
+        }
+
+        .profile-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        /* image behaviour */
+        .post-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .post-image-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(10px);
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
+        .post-image {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 1;
+        }
+        /* text */
+        .post-title {
+            font-weight:700;
+        }
+        .post-content {
+            font-size:1rem;
+            line-height:1.6;
+        }
+        .card-body{
+          background: linear-gradient(rgba(26, 126, 193, 0.347), rgba(215, 213, 213, 0.192));
+          border : 1px solid rgb(135, 138, 214);
+        }
+        /* buttons */
+        .card-footer button {
+            border:none;
+        }
+        .card-footer button:hover {
+            background:#c1b4b4;
+        }
+        .bg-purple { background : linear-gradient(rgba(170, 160, 196, 0.447), rgba(61, 9, 16, 0.586)) !important; border : 1px solid rgb(224, 75, 75);}
+        </style>
+    <%- include('./partials/head') %>
+    <title>What's-Up in শহর Rn_👯</title>
+  </head>
+  <body>
+    <%- include('./partials/nav') %>
+    <div class="container-fluid" style="padding-top: 7px;">
+      <h3 class="text-center mb-4">তা.. আজ সবার প্ল্যান'টা কী.. What's Cookin'👀🍟</h3>
+        <div class="container-fluid mt-4" >
+          <div class="post-feed">
+            <% userposts.forEach(post => { %>
+            <div class="card post-card shadow-sm mb-4">
+              <!-- Post Header -->
+              <div class="card-header bg-purple d-flex align-items-center">
+                <div class="profile-circle"><img src="/images/default.png"/></div>
+                <div class="ms-3">
+                  <h6 class="mb-0">
+                    <%= post.createdBy.fullName %> - <%= post.createdBy.role %>
+                  </h6>
+                  <small class="text-muted"><%= post.createdAt.toDateString() %></small>
+                </div>
+              </div>
+
+              <!-- Post Image -->
+              <% if (post.coverImageURL) { %>
+                <div class="post-image-wrapper">
+                  <img
+                    src="<%= post.coverImageURL %>"
+                    class="post-image-bg"
+                    alt=""
+                  >
+                  <img
+                    src="<%= post.coverImageURL %>"
+                    class="post-image"
+                    alt="<%= post.title %>"
+                  >
+                </div>
+              <% } %>
+
+              <!-- Post Content -->
+              <div class="card-body">
+                <h5 class="post-title"><%= post.title %></h5>
+                <p class="post-content"><%= post.content %></p>
+                <span class="badge rounded-pill bg-primary">
+                  📍 <%= post.location %>
+                </span>
+              </div>
+
+              <!-- Actions -->
+              <div class="card-footer bg-white ">
+                <% if (locals.user) { %>
+                  <% 
+                    const postLikes = likes.filter(l => l.userPostId && l.userPostId.toString() === post._id.toString());
+                    const likeCount = postLikes.length;
+                    const userHasLiked = locals.user && postLikes.some(l => l.createdBy.toString() === user._id.toString());
+                  %>
+
+                  <form action="/user-posts/like/<%= post._id %>" method="post" style="display:inline;">
+                    <button class="btn btn-light" type="submit">
+                      <%= userHasLiked ? "❤️" : "🤍" %> Like <% if (likeCount > 0) { %>(<%= likeCount %>)<% } %>
+                    </button>
+                  </form>
+                  <button
+                    class="btn btn-light"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#commentBox-<%= post._id %>">
+                    💬 Comment
+                  </button>
+                <% } %>
+                  <% if (locals.user && post.createdBy._id.toString() === user._id.toString()) { %>
+                    <form action="/user-posts/delete/<%= post._id %>" method="post" 
+                      onsubmit="return confirm('Delete this post?');" 
+                        style="display:inline;">
+                          <button class="btn btn-light text-danger" type="submit">
+                            🗑️ Delete
+                          </button>
+                    </form>
+                  <% } %>
+
+                <!-- Comments visible to everyone, logged in or not -->
+                 <h6>Comments</h6>
+                <% comments
+                    .filter(c => c.userPostId && c.userPostId.toString() === post._id.toString())
+                    .forEach(comment => { %>
+                      <p>
+                        <b><%= comment.createdBy.fullName %></b> :
+                        <%= comment.content %>
+                      </p>
+                <% }) %>
+              </div>
+
+              <!-- Hidden Comment Box (only makes sense if logged in) -->
+              <% if (locals.user) { %>
+              <div class="collapse" id="commentBox-<%= post._id %>">
+                <div class="card-body border-top">
+                  <form action="/user-posts/comment/<%= post._id %>" method="post">
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        name="comment"
+                        class="form-control"
+                        placeholder="Write a comment..."
+                        required>
+                      <button class="btn btn-primary" type="submit">Send</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <% } %>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+      <% if (locals.user) { %>
+    <div class="position-fixed bottom-0 end-0 p-4">
+        <!-- Toggle Button -->
+        <button
+          class="btn btn-primary rounded-pill shadow"
+          data-bs-toggle="collapse"
+          data-bs-target="#postBox"
+          id="postButton"
+        >
+          ✚ Post
+        </button>
+
+        <!-- Floating Form -->
+        <div class="collapse mt-3" id="postBox">
+          <div class="card shadow" style="width: 350px">
+            <div class="card-header d-flex justify-content-between">
+              <span> Create Post </span>
+              <button
+                class="btn-close"
+                data-bs-toggle="collapse"
+                data-bs-target="#postBox"
+              ></button>
+            </div>
+
+            <div class="card-body">
+              <form action="/user-posts" method="post" enctype="multipart/form-data">
+                <input class="form-control mb-2" placeholder="Title" id="title" name="title"/>
+                <textarea class="form-control mb-2" rows="3" placeholder="What's happening?" id="content" name="content"></textarea>
+                <input class="form-control mb-2" placeholder="Location" id="location" name="location"/>
+                <input class="form-control mb-3" type="file" id="coverImage" name="coverImage"/>
+                <button class="btn btn-success w-100">Post</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+
+    <%- include("./partials/chatbot") %>
+    <%- include('./partials/scripts') %>
+  </body>
+</html>

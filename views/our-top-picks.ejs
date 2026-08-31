@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+        margin: 0;
+        min-height: 100vh;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.38)),
+          url("./images/backround-image.jpeg");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      .card {
+          background: transparent !important;
+          border: none;
+          overflow: hidden;
+      }
+
+      .card-body {
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(20px)saturate(150%);
+          -webkit-backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.782);
+              box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.12);
+      }
+      .toast-message {
+          display: none;
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #c08d7f;
+          color: #594d71;
+          padding: 12px 24px;
+          border-radius: 8px;
+          z-index: 99999;
+          border: 3px solid rgb(189, 221, 9);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+      .map-box {
+        width: 100%;
+        height: 500px;
+        border: 2px solid black;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      #event-picker-map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+    <%- include('./partials/head') %>
+    <title>SEQ'S Surroundings</title>
+  </head>
+  <body>
+    <%- include('./partials/nav') %>
+    <div class="container-fluid mt-2" style="background-color: rgb(245, 244, 242, .45);"><h3 align="center">শহরে'র আমাদের Best Pickss 🤓😗</h3></div>
+
+      <div class="container-fluid mt-2">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-4">
+
+          <div class="col">
+            <div class="card h-100">
+              <!-- Mini image carousel replaces the single <img> -->
+              <div id="carousel-mitra-cafe" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="/images/ourTopPicks/kumortuli_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/kumortuli_2.avif" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/kumortuli_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-mitra-cafe" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel-mitra-cafe" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">Kumortuli Walkarounds (Sovabazar)</h5>
+                <p class="card-text">a famous traditional potters' quarter in North Kolkata, India, where local artisans sculpt clay idols of Hindu gods and goddesses, most notably for the annual Durga Puja festival.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <!-- Mini image carousel replaces the single <img> -->
+              <div id="carousel-2" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="/images/ourTopPicks/dulhouse_2.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/dulhouse_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/dulhouse_2.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-2" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel-2" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+              <!-- Rest of the card stays the same -->
+              <div class="card-body">
+                <h5 class="card-title">Dulhouse - The Heart of the city</h5>
+                <p class="card-text">The former Dalhousie Square, now known as Benoy-Badal-Dinesh Bagh, is an oasis at the heart of modern Kolkata, formerly Calcutta.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <!-- Mini image carousel replaces the single <img> -->
+              <div id="carousel-3" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="/images/ourTopPicks/bagbazar_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/bagbazar_2.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/bagbazar_3.png" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-3" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel-3" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+              <!-- Rest of the card stays the same -->
+              <div class="card-body">
+                <h5 class="card-title">Exploring Bagbazar and Its Famous Ghats</h5>
+                <p class="card-text">Bagbazar is a historic neighborhood in North Kolkata, by the Hooghly River to the west, featuring key local spots like Bagbazar Ghat, Mayer Bari, etc.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <!-- Mini image carousel replaces the single <img> -->
+              <div id="carousel-4" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="/images/ourTopPicks/cemetry_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/cemetry_2.webp" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/cemetry_3.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-4" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel-4" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+              <!-- Rest of the card stays the same -->
+              <div class="card-body">
+                <h5 class="card-title">Spooky Afternoon at Part Street Cemetry</h5>
+                <p class="card-text">South Park Street Cemetery, also known as the 'Great Christian Burial Ground', was one of the earliest non-church cemeteries in the world. is houses numerous graves and monuments belonging to British soldiers, administrators, and their families.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <!-- Mini image carousel replaces the single <img> -->
+              <div id="carousel-5" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="/images/ourTopPicks/princep_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/pincep_2.png" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/princep_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-5" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel-5" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+              <!-- Rest of the card stays the same -->
+              <div class="card-body">
+                <h5 class="card-title">Lovely Evenings at The James Princep's</h5>
+                <p class="card-text">Prinsep Ghat is a beautiful riverside promenade in Kolkata. It is a popular spot for picnics, boat rides, and relaxing walks along the Hooghly River.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <!-- Mini image carousel replaces the single <img> -->
+              <div id="carousel-6" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="/images/ourTopPicks/eden_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/eden_2.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="/images/ourTopPicks/eden_1.jpg" class="d-block w-100 card-img-top" alt="Mitra Cafe">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-6" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel-6" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+              <!-- Rest of the card stays the same -->
+              <div class="card-body">
+                <h5 class="card-title">Calm Afternoons at Eden Gardens Park </h5>
+                <p class="card-text">The Eden Gardens - Although most identify the name ‘Eden Gardens’ with the iconic cricket stadium in Calcutta , The garden, then called Auckland Circus Garden, was opened to the public in 1840, its construction supervised by Emily and Fanny Auckland.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <img src="/images/ourTopPicks/gazeebo.webp" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">The Gazeboo (Park Lane/Esplanade)</h5>
+                <p class="card-text">Vibe: Extremely high footfall, trendy aesthetic setup known for viral massive thalis and late-night crowd.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <img src="/images/ourTopPicks/mitra_cafe.webp" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">Mitra Cafe (Sovabazar)</h5>
+                <p class="card-text">Packed every evening with snack lovers craving legendary Kabiraji cutlets and fish fry</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card h-100">
+              <img src="/images/ourTopPicks/cecil.webp" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">Cecil Bar & Restaurant</h5>
+                <p class="card-text">Classic north/central joint with steady footfall for North Indian and Chinese food, Alcoholic beverages also being served.</p>
+                <a class="btn btn-primary" onclick="showToast()">Save For an Evening</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="saveToast" class="toast-message">
+        Place is Saved For You
+      </div>
+
+      <div class="position-fixed bottom-0 end-0 p-4" style="z-index: 1001;">
+        <!-- Toggle Button -->
+        <button
+          class="btn btn-primary rounded-pill shadow"
+          data-bs-toggle="collapse"
+          data-bs-target="#postBox"
+          id="postButton"
+        >
+          🗺 EXPLORE-LOCATIONS
+        </button>
+
+        <!-- Floating Form -->
+        <div class="collapse mt-3" id="postBox">
+          <div class="card shadow" style="width: 650px;">
+            <div class="card-header d-flex justify-content-between">
+              <span>Explore Our Top Picks Throgh The Map</span>
+              <button
+                class="btn-close"
+                data-bs-toggle="collapse"
+                data-bs-target="#postBox"
+              ></button>
+            </div>
+
+            <div class="container-fluid mt-4">
+              <div class="map-box">
+                <div id="event-picker-map"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+      <script>
+              var eventMap = L.map("event-picker-map").setView([22.57, 88.36], 12);
+
+              L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "powered by - Arindam@S",
+              }).addTo(eventMap);
+
+              document.getElementById("postBox").addEventListener("shown.bs.collapse", function () {
+                eventMap.invalidateSize();
+
+                // Only add markers once the map has correct real dimensions
+                L.marker([22.6000, 88.3614])
+                  .addTo(eventMap)
+                  .bindPopup("Kumortuli", { autoClose: false})
+                  .openPopup();
+
+                L.marker([22.6500, 88.3814])
+                  .addTo(eventMap)
+                  .bindPopup("Bagbazar", { autoClose: false}) // <-- also fixing the duplicate label, see note below
+                  .openPopup();
+              }, { once: true }); // ensures markers only get added once, not re-added every time the box reopens
+      </script>
+
+    <%- include("./partials/chatbot") %>
+    <%- include('./partials/scripts') %>
+  </body>
+</html>
+
+<script>
+function showToast(button) {
+  const card = button.closest(".card-body"); // finds nearest ancestor with this class, however deep
+  const toast = card ? card.querySelector(".toast-message") : null;
+  if (!toast) {
+    console.error("No toast element found for this card");
+    return;
+  }
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 3000);
+}
+</script>
+
+<script>
+function showToast() {
+    const toast = document.getElementById("saveToast");
+
+    toast.style.display = "block";
+
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 2500);
+}
+</script>
