@@ -1,481 +1,194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>শহরে'র-Tours 🏇🏻</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    
     <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background-image:
-          linear-gradient(rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.68)),
-          url("./images/backround-image.jpeg");
-        background-size: cover;
-        background-position: center 20%;
-        background-attachment: fixed;
-        font-family:
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          sans-serif;
-      }
+        body { background-image:
+          linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.38)),url("./images/backround-image.jpeg"); padding-top: 2rem; 
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed; /* Optional: Keeps the background locked in place when you scroll down the page */}
+        .tour-card { transition: transform 0.3s ease, box-shadow 0.3s ease; height: 100%; border: none; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
+        .tour-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); }
+        .card-img-top { height: 220px; object-fit: cover; }
+        .price-badge { position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.8); color: white; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; z-index: 2; }
+        .category-badge { position: absolute; top: 15px; left: 15px; background: rgba(13, 110, 253, 0.9); color: white; padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; z-index: 2; }
+        .description-text { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.9rem; }
+        #map { height: 420px; width: 100%; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(60, 19, 19, 0.08); z-index: 1; }
+        .route-label { background-color: rgba(255, 255, 255, 0.9); border: 2px solid #333; border-radius: 4px; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; color: #680505; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .start-label { color: #276aae; border-color: #6eb21a; }
+        .end-label { color: #c62636; border-color: #b2fe00; }
+        footer { margin-top: 80px; padding: 35px 0; background: linear-gradient(rgba(74, 79, 139, 0.62), rgba(248, 186, 186, 0.68)); backdrop-filter: blur(10px); border-top: 1px solid rgba(0, 0, 0, 0.05); }
     </style>
-  
     <%- include('./partials/head') %>
-    <title>SEQ'S Surroundings</title>
-  </head>
-  <body>
+</head>
+
+<body>
     <%- include('./partials/nav') %>
-        <section class="container py-5">
-            <!-- PAGE HEADER -->
-            <div class="text-center mb-5">
-                <h1 class="display-7 fw-bold mt-2">
-                Your শহর, Your শহুরে Way ✨
-                </h1>
 
-                <p class="text-muted fs-5">
-                Pick a plan and discover the places worth wandering through.
-                </p>
-                <span class="badge rounded-pill text-bg-primary px-3 py-2">
-                🗺️ EXPLORE THE CITY
-                </span>
-                
-            </div>
-            
-            <!-- TOUR PLANS -->
-            <div class="row g-4">
+    <div class="container pb-5">
+        <div class="text-center mb-4">
+            <h1 class="fw-bold">Explore শহরে'র-Tours & Attractions with us 🏇🏻</h1>
+            <span class="text-primary fw-semibold">Live city exploration routes & categories powered by <b><u>TripAdvisor</u> ✨</b></span>
+        </div>
 
-                <!-- PLAN 1 -->
-                <div class="col-lg-6">
-                <div class="card h-100 shadow-lg border-0 overflow-hidden">
+        <!-- MAP -->
+        <div id="map"></div>
 
-                    <div id="tourCarousel1"
-                        class="carousel slide"
-                        data-bs-ride="carousel">
+        <!-- TOURS -->
+        <div class="row g-4">
+            <% if (tours && tours.length > 0) { %>
+                <% tours.forEach((tour, index) => { %>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card tour-card position-relative">
+                            <span class="category-badge">Tour</span>
+                            <span class="price-badge"><%= tour.price || "Check Details" %></span>
 
-                    <div class="carousel-inner">
+                            <img src="<%= tour.image %>" class="card-img-top" alt="<%= tour.title %>" onerror="this.src='https://images.unsplash.com/photo-1558431382-27e303142255?q=80&w=600&auto=format&fit=crop'">
 
-                        <div class="carousel-item active">
-                        <img src="/images/tours/north-kolkata.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title fw-bold mb-1"><%= tour.title %></h5>
+                                <p class="text-muted small mb-2">📍 <%= tour.location || "Kolkata" %></p>
+                                <p class="text-warning mb-2 fw-bold">⭐ <%= tour.rating || "Popular" %></p>
+                                <p class="text-secondary description-text mb-4"><%= tour.description %></p>
+                                <a href="<%= tour.url %>" target="_blank" class="btn btn-outline-primary mt-auto w-100">View Details</a>
+                            </div>
                         </div>
-
-                        <div class="carousel-item">
-                        <img src="/images/tours/kumartuli.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
-                        <div class="carousel-item">
-                        <img src="/images/tours/college-street.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
                     </div>
-
-                    <button class="carousel-control-prev"
-                            type="button"
-                            data-bs-target="#tourCarousel1"
-                            data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-
-                    <button class="carousel-control-next"
-                            type="button"
-                            data-bs-target="#tourCarousel1"
-                            data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
-
-                    </div>
-
-                    <div class="card-body p-4">
-
-                    <span class="badge text-bg-danger mb-2">
-                        🔥 CULTURE
-                    </span>
-
-                    <h3 class="card-title">
-                        North Kolkata Evening
-                    </h3>
-
-                    <p class="text-muted">
-                        Heritage buildings, Kumartuli, College Street,
-                        old cafés and the soul of North Kolkata.
-                    </p>
-
-                    <div class="d-flex gap-3 mb-3">
-                        <span>⏱️ 5 hrs</span>
-                        <span>🚶 Walking</span>
-                        <span>🍛 Food</span>
-                    </div>
-
-                    <a href="/tour/north-kolkata"
-                        class="btn btn-dark rounded-pill px-4">
-                        Explore Plan →
-                    </a>
-
-                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="col-12">
+                    <div class="alert alert-warning text-center">No tours found.</div>
                 </div>
-                </div>
+            <% } %>
+        </div>
+    </div>
 
+    <script>
+        // ==========================================
+        // INITIALIZE MAP
+        // ==========================================
+        const map = L.map("map").setView([22.5710, 88.3630], 14);
 
-                <!-- PLAN 2 -->
-                <div class="col-lg-6">
-                <div class="card h-100 shadow-lg border-0 overflow-hidden">
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "© OpenStreetMap contributors"
+        }).addTo(map);
 
-                    <div id="tourCarousel2"
-                        class="carousel slide"
-                        data-bs-ride="carousel">
+        const drawLine = async (coords, color) => {
+            if (coords.length < 2) return;
+            // OSRM requires coordinates in [longitude, latitude] format separated by semicolons
+            const osrmCoords = coords.map(c => `${c[1]},${c[0]}`).join(';');
+            const url = `https://router.project-osrm.org/route/v1/driving/${osrmCoords}?overview=full&geometries=geojson`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.routes && data.routes.length > 0) {
+                    const routeCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    L.polyline(routeCoords, { 
+                        color: color, 
+                        weight: 4, 
+                        opacity: 0.85 
+                    }).addTo(map);
+                }
+            } catch (error) {
+                console.error("Routing failed, falling back to straight lines:", error);
+                // Fallback if the API fails
+                L.polyline(coords, { color: color, weight: 4, dashArray: "10, 10" }).addTo(map);
+            }
+        };
 
-                    <div class="carousel-inner">
+        // ==========================================
+        // PASS BACKEND DATA INTO JAVASCRIPT
+        // ==========================================
+        const tours = <%- JSON.stringify(tours || []) %>;
+        const route1 = [], route2 = [], route3 = [], route4 = [];
 
-                        <div class="carousel-item active">
-                        <img src="/images/tours/park-street.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
+        // ==========================================
+        // ADD TOUR MARKERS
+        // ==========================================
+        tours.forEach((tour, index) => {
+            // Define a smaller version of the default pin
+            const smallPin = L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                iconSize: [15, 25],      // Size of the icon (default is 25, 41)
+                iconAnchor: [7, 25],     // The tip of the pin (points to the exact coordinate)
+                popupAnchor: [1, -22],   // Where the popup opens relative to the pin
+                shadowSize: [25, 25]     // Size of the shadow
+            });
 
-                        <div class="carousel-item">
-                        <img src="/images/tours/victoria.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
+            if (tour.coordinates && tour.coordinates.length === 2) {
+                const dot = L.marker(tour.coordinates, {
+                    icon: smallPin
+                }).addTo(map);
 
-                        <div class="carousel-item">
-                        <img src="/images/tours/maidan.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
+                const popupContent = `
+                    <div style="text-align: center; max-width: 180px;">
+                        <img src="${tour.image}" style="width: 100%; height: 75px; object-fit: cover; border-radius: 4px; margin-bottom: 5px;">
+                        <h6 style="margin: 0; font-size: 13px; font-weight: bold;">${tour.title}</h6>
+                        <a href="${tour.url}" target="_blank" style="font-size: 11px; color: #0d6efd; text-decoration: none; font-weight: 600;">View Tour</a>
                     </div>
+                `;
+                dot.bindPopup(popupContent);
 
-                    <button class="carousel-control-prev"
-                            type="button"
-                            data-bs-target="#tourCarousel2"
-                            data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
+                // START / END LABELS
+                const addTooltip = (label, direction, className) => {
+                    dot.bindTooltip(label, { permanent: true, direction, className });
+                };
 
-                    <button class="carousel-control-next"
-                            type="button"
-                            data-bs-target="#tourCarousel2"
-                            data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
+                if ([0, 5, 10, 21].includes(index)) addTooltip(`Start: ${tour.title}`, "top", "route-label start-label");
+                if ([4, 9, 15, 26].includes(index)) addTooltip(`End: ${tour.title}`, "bottom", "route-label end-label");
 
-                    </div>
+                // GROUP ROUTES
+                if (index < 5) route1.push(tour.coordinates);
+                else if (index >= 5 && index < 10) route2.push(tour.coordinates);
+                else if (index >= 10 && index < 16) route3.push(tour.coordinates);
+                else if (index >= 21 && index < 27) route4.push(tour.coordinates);
+            }
+        });
 
-                    <div class="card-body p-4">
+        // ==========================================
+        // DRAW ROUTES
+        // ==========================================
+        drawLine(route1, "purple");
+        drawLine(route2, "#1e90ff");
+        drawLine(route3, "red");
+        drawLine(route4, "green");
 
-                    <span class="badge text-bg-warning mb-2">
-                        🌆 CITY LIGHTS
-                    </span>
+        setTimeout(() => map.invalidateSize(), 300);
+    </script>
 
-                    <h3 class="card-title">
-                        Central Kolkata
-                    </h3>
-
-                    <p class="text-muted">
-                        Victoria Memorial, Maidan, Park Street
-                        and Kolkata's evening lights.
-                    </p>
-
-                    <div class="d-flex gap-3 mb-3">
-                        <span>⏱️ 4 hrs</span>
-                        <span>🚕 Easy Ride</span>
-                        <span>📸 Photography</span>
-                    </div>
-
-                    <a href="/tour/central-kolkata"
-                        class="btn btn-dark rounded-pill px-4">
-                        Explore Plan →
-                    </a>
-
-                    </div>
-                </div>
-                </div>
-
-
-                <!-- PLAN 3 -->
-                <div class="col-lg-6">
-                <div class="card h-100 shadow-lg border-0 overflow-hidden">
-
-                    <div id="tourCarousel3"
-                        class="carousel slide"
-                        data-bs-ride="carousel">
-
-                    <div class="carousel-inner">
-
-                        <div class="carousel-item active">
-                        <img src="/images/tours/south-kolkata.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
-                        <div class="carousel-item">
-                        <img src="/images/tours/kalighat.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
-                        <div class="carousel-item">
-                        <img src="/images/tours/gariahat.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
-                    </div>
-
-                    <button class="carousel-control-prev"
-                            type="button"
-                            data-bs-target="#tourCarousel3"
-                            data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-
-                    <button class="carousel-control-next"
-                            type="button"
-                            data-bs-target="#tourCarousel3"
-                            data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
-
-                    </div>
-
-                    <div class="card-body p-4">
-
-                    <span class="badge text-bg-success mb-2">
-                        🌿 RELAXED
-                    </span>
-
-                    <h3 class="card-title">
-                        South Kolkata Chill
-                    </h3>
-
-                    <p class="text-muted">
-                        Cafés, markets, temples, art and relaxed
-                        neighbourhood exploration.
-                    </p>
-
-                    <div class="d-flex gap-3 mb-3">
-                        <span>⏱️ 4 hrs</span>
-                        <span>☕ Cafés</span>
-                        <span>🛍️ Shopping</span>
-                    </div>
-
-                    <a href="/tour/south-kolkata"
-                        class="btn btn-dark rounded-pill px-4">
-                        Explore Plan →
-                    </a>
-
-                    </div>
-                </div>
-                </div>
-
-
-                <!-- PLAN 4 -->
-                <div class="col-lg-6">
-                <div class="card h-100 shadow-lg border-0 overflow-hidden">
-
-                    <div id="tourCarousel4"
-                        class="carousel slide"
-                        data-bs-ride="carousel">
-
-                    <div class="carousel-inner">
-
-                        <div class="carousel-item active">
-                        <img src="/images/tours/food-tour.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
-                        <div class="carousel-item">
-                        <img src="/images/tours/street-food.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
-                        <div class="carousel-item">
-                        <img src="/images/tours/sweets.jpg"
-                            class="d-block w-100"
-                            style="height:280px; object-fit:cover;">
-                        </div>
-
-                    </div>
-
-                    <button class="carousel-control-prev"
-                            type="button"
-                            data-bs-target="#tourCarousel4"
-                            data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-
-                    <button class="carousel-control-next"
-                            type="button"
-                            data-bs-target="#tourCarousel4"
-                            data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
-
-                    </div>
-
-                    <div class="card-body p-4">
-
-                    <span class="badge text-bg-danger mb-2">
-                        🍛 FOODIE
-                    </span>
-
-                    <h3 class="card-title">
-                        Kolkata Food Crawl
-                    </h3>
-
-                    <p class="text-muted">
-                        Street food, Bengali sweets, iconic cafés
-                        and legendary local dishes.
-                    </p>
-
-                    <div class="d-flex gap-3 mb-3">
-                        <span>⏱️ 3 hrs</span>
-                        <span>🍜 Food</span>
-                        <span>❤️ Local</span>
-                    </div>
-
-                    <a href="/tour/food-crawl"
-                        class="btn btn-dark rounded-pill px-4">
-                        Explore Plan →
-                    </a>
-
-                    </div>
-                </div>
-                </div>
-
-            </div>
-            </section>
-
-
-            <!-- MAP SECTION -->
-
-            <section class="container pb-5">
-
-            <div class="text-center mb-4">
-                <span class="text-primary fw-semibold">
-                📍 PLAN YOUR ROUTE
-                </span>
-
-                <h2 class="fw-bold">
-                Explore All Four Plans
-                </h2>
-
-                <p class="text-muted">
-                See where each experience takes you.
-                </p>
-            </div>
-
-            <div class="card border-0 shadow-lg overflow-hidden">
-                <div id="tour-map"
-                    style="height:500px; width:100%;">
-                </div>
-            </div>
-
-        </section>
-
-    <%- include("./partials/chatbot") %>
+    <!-- Load partials at the END in the correct order -->
+       <footer>
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h5 class="fw-bold mb-1">🌆 শহরের সন্ধ্যা'zzz v0.4</h5>
+          <small class="text-muted">Its All about spreading positivity</small>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+          <a href="#" class="text-decoration-none text-muted me-3">About</a>
+          <a href="#" class="text-decoration-none text-muted me-3">Businesses</a>
+          <a href="#" class="text-decoration-none text-muted">Contact</a>
+        </div>
+      </div>
+      <hr />
+      <div class="text-center text-muted small">
+        © <%= new Date().getFullYear() %> শহরের সন্ধ্যা'zzz - Designed, Devoloped and Manages By - Arindamm Samadder 
+      </div>
+    </div>
+  </footer>
     <%- include('./partials/scripts') %>
-  </body>
+    <%- include("./partials/chatbot") %>
+</body>
 </html>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<!-- Leaflet JavaScript -->
-<script>
-  const tourMap = L.map("tour-map").setView(
-    [22.5726, 88.3639],
-    12
-  );
-  L.tileLayer(
-    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      attribution: "&copy; OpenStreetMap contributors"
-    }
-  ).addTo(tourMap);
-  // NORTH KOLKATA
-  const northKolkata = [
-    [22.636, 88.412],
-    [22.594, 88.369],
-    [22.585, 88.363],
-    [22.576, 88.365]
-  ];
- // CENTRAL KOLKATA
-  const centralKolkata = [
-    [22.544, 88.342],
-    [22.548, 88.343],
-    [22.555, 88.350],
-    [22.552, 88.361]
-  ];
-  // SOUTH KOLKATA
-  const southKolkata = [
-    [22.520, 88.342],
-    [22.520, 88.356],
-    [22.516, 88.366],
-    [22.509, 88.369]
-  ];
-  // FOOD TOUR
-  const foodTour = [
-    [22.595, 88.363],
-    [22.584, 88.365],
-    [22.572, 88.363],
-    [22.558, 88.350]
-  ];
-  // Draw routes
-  L.polyline(northKolkata, {
-    weight: 5
-  }).addTo(tourMap)
-    .bindPopup("🔥 North Kolkata Evening");
-
-  L.polyline(centralKolkata, {
-    weight: 5
-  }).addTo(tourMap)
-    .bindPopup("🌆 Central Kolkata");
-
-  L.polyline(southKolkata, {
-    weight: 5
-  }).addTo(tourMap)
-    .bindPopup("🌿 South Kolkata");
-
-  L.polyline(foodTour, {
-    weight: 5
-  }).addTo(tourMap)
-    .bindPopup("🍛 Kolkata Food Crawl");
-
-  // Mark important locations
-  L.marker([22.636, 88.412])
-    .addTo(tourMap)
-    .bindPopup("📍 Starting Point");
-
-  L.marker([22.594, 88.369])
-    .addTo(tourMap)
-    .bindPopup("🏺 Kumartuli");
-
-  L.marker([22.572, 88.363])
-    .addTo(tourMap)
-    .bindPopup("📚 College Street");
-
-  L.marker([22.544, 88.342])
-    .addTo(tourMap)
-    .bindPopup("🏛️ Victoria Memorial");
-
-  L.marker([22.520, 88.342])
-    .addTo(tourMap)
-    .bindPopup("🌿 South Kolkata");
-
-  setTimeout(() => {
-    tourMap.invalidateSize();
-  }, 300);
-
-</script>

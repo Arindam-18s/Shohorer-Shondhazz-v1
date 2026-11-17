@@ -1,3 +1,5 @@
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '8.8.4.4']); // Google DNS
 require("dotenv").config();
 
 const path = require("path"); //for handling and transforming file paths
@@ -20,7 +22,7 @@ const app = express();
 const PORT = 3005;
 
 mongoose
-  .connect("mongodb://localhost:27017/শহরেরসন্ধ্যা_zzz")
+  .connect("mongodb+srv://ShohorerShondhaz:ShohurePassWord1234@shohurecluster1.lud6feo.mongodb.net/ShohureDB?retryWrites=true&w=majority")
   .then((e) => console.log("MongoDB connected"));
 
 app.set("view engine", "ejs"); //setting up view engine for server side rendering

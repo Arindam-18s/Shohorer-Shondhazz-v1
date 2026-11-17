@@ -1,0 +1,258 @@
+// -------------------------------------------------------------------
+
+// const express = require("express");
+// const ollama = require("ollama").default;
+// const Business = require("../models/businesses");
+// const UserPosts = require("../models/user-posts");
+// const UserData = require("../models/user");
+// const router = express.Router();
+
+// async function getDatabaseContext() {
+//     try {
+//         const businesses = await Business
+//             .find({})
+//             .limit(20)
+//             .lean();
+
+//         const posts = await UserPosts
+//             .find({})
+//             .sort({ createdAt: -1 })
+//             .limit(10)
+//             .populate("createdBy")
+//             .lean();
+
+//         const Users = await UserData
+//             .find({})
+//             .limit(10)
+//             .lean();
+
+//         return {
+//             businesses,
+//             posts,
+//             Users
+//         };
+
+//     } catch (error) {
+//         console.error("Database context error:", error);
+//         return {};
+//     }
+// }
+
+// function formatDatabaseContext(data) {
+//     let context = "";
+
+//     const businesses = data?.businesses || [];
+//     const posts = data?.posts || [];
+//     const Users = data?.Users || [];
+
+//     context += `
+//                 ==============================
+//                 BUSINESSES
+//                 ==============================
+//                 `;
+
+//     data.businesses.forEach((business) => {
+//         context += `
+//                     Business Name: ${business.businessName || "Unknown"}
+//                     Type: ${business.businessType || "Unknown"}
+//                     Description: ${business.businessDescription || "None"}
+//                     Offers: ${business.offers || "None"}
+//                     Location: ${business.location || "Unknown"}
+//                     Latitude: ${business.lat || "Unknown"}
+//                     Longitude: ${business.lng || "Unknown"}
+//                     `;
+//     });
+
+//     context += `
+//                 ==============================
+//                 RECENT USER POSTS
+//                 ==============================
+//                 `;
+
+//     data.posts.forEach((post) => {
+//         context += `
+//                     Title: ${post.title || "Untitled"}
+//                     Content: ${post.content || "None"}
+//                     Location: ${post.location || "Unknown"}
+//                     Created At: ${post.createdAt || "Unknown"}
+//                     `;
+//     });
+
+//     context += `
+//                 ==============================
+//                 USER DETAILS
+//                 ==============================
+//                 `;
+
+//     // data.cityTours.forEach((tour) => {
+//     //     context += `
+//     //                 Tour: ${tour.title || "Unknown"}
+//     //                 Description: ${tour.description || "None"}
+//     //                 `;
+//     // });
+
+//     data.Users.forEach((user) => {
+//         context += `
+//                     UserName: ${user.fullName || "Untitled"}
+//                     UserEmail: ${user.email || "None"}
+//                     UserRole: ${user.role || "Unknown"}
+//                     UserCreatedAt : ${user.createdAt || "unknown"}
+//                     `;
+//     });
+//     return context;
+// }
+
+// const SYSTEM_PROMPT = `
+//                         You are the AI city discovery assistant for this website.
+
+//                         You help users discover businesses, places, food,
+//                         events, activities and city tours.
+
+//                         IMPORTANT RULES:businesses, prioritize the
+//                                 businesses provided in the database.
+//                             13. Never claim something is currently happening unless
+//                                 the database context supports it.
+//                             14. Be honest when information is unavailable.
+//                             1. The DATABASE CONTEXT is the primary source of truth
+//                             for information about this website.
+//                             2. Never invent businesses, events, offers, locations,
+//                             ratings or other database information.
+//                             3. If something is not present in the database context,
+//                             say that the website does not currently have that
+//                             information.
+//                             4. Use general knowledge only when appropriate and clearly
+//                             distinguish it from information coming from the website.
+//                             5. Use Markdown formatting.
+//                             6. Use headings when useful.
+//                             7. Use bullet points instead of unnecessarily long paragraphs.
+//                             8. Use numbered lists for itineraries.
+//                             9. Use emojis naturally but don't overuse them.
+//                             10. When recommending something, explain why it is relevant.
+//                             11. If the user asks what is happening now, prioritize
+//                                 recent posts and current events.
+//                             12. If the user asks about 
+// `;
+
+// router.post("/message", async (req, res) => {
+//     try {
+//         const contents = req.body.contents || [];
+//         const databaseData = await getDatabaseContext();
+//         const databaseContext = formatDatabaseContext(databaseData);
+
+//         const messages = contents.map((item) => ({
+//             role: item.role === "model" ? "assistant" : "user",
+//             content: item.parts
+//                 ?.map((part) => part.text || "")
+//                 .join("") || ""
+//         }));
+
+//         // ADD DATABASE CONTEXT
+//         const finalMessages = [
+//                                 {
+//                                     role: "system",
+//                                     content: SYSTEM_PROMPT
+//                                 },
+//                                 {
+//                                     role: "system",
+//                                     content: `
+//                                             Here is the current information available
+//                                             from the website database:
+//                     ${databaseContext}
+//                     `
+//                                 },
+//                                 ...messages
+//                             ];
+
+//         const response = await ollama.chat({
+//             model: "llama3.2",
+//             messages: finalMessages
+//         });
+
+//         const botResponse = response.message.content;
+
+//         res.json({
+//             candidates: [
+//                 {
+//                     content: {
+//                         parts: [
+//                             {
+//                                 text: botResponse
+//                             }
+//                         ]
+//                     }
+//                 }
+//             ]
+//         });
+
+//     } catch (error) {
+//         console.error("Ollama error:", error);
+
+//         res.status(500).json({
+//             error: error.message
+//         });
+//     }
+// });
+
+// module.exports = router;
+
+// -------------------------------------------------------------------------------------------------
+
+
+// const express = require("express");
+// const ollama = require("ollama").default;
+// const router = express.Router();
+
+// router.post("/message", async (req, res) => {
+//     try {
+//         const { message } = req.body;
+
+//         const response = await ollama.chat({
+//             model: "llama3.2",
+//             messages: [
+//                 {
+//                     role: "system",
+//                     content: `
+// You are the AI assistant for a local city discovery platform.
+
+// You help users discover:
+// - local businesses
+// - restaurants
+// - events
+// - attractions
+// - community posts
+// - things happening nearby
+// - city tour plans
+
+// Use the provided application data as your primary source.
+
+// Format responses with:
+// - Markdown headings
+// - **bold** important places
+// - bullet points
+// - numbered itineraries
+// - natural emojis
+
+// Never invent businesses, events or prices that are not present in the provided data.
+//                     `
+//                 },
+//                 {
+//                     role: "user",
+//                     content: message
+//                 }
+//             ]
+//         });
+
+//         res.json({
+//             response: response.message.content
+//         });
+
+//     } catch (error) {
+//         console.error(error);
+
+//         res.status(500).json({
+//             error: "Something went wrong with the chatbot"
+//         });
+//     }
+// });
+
+// module.exports = router;
