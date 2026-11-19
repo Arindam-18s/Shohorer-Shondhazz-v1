@@ -16,7 +16,7 @@ require("./models/post-impressions");
 require("./models/chatbot");
 
 const userRoute = require("./routes/user");
-const UserPostsRoute = require("./routes/user-posts");
+const UserPostsRoute = require("./routes/user-posts.js");
 const BusinessRoute = require("./routes/businesses");
 const OurTopPicks = require("./routes/ourTopPicks");
 const chatbotRoute = require("./routes/chatbot");

@@ -39,6 +39,11 @@ module.exports = {
       .map((m) => m.trim())
       .filter(Boolean),
   },
+  llm: {
+    apiKey: (process.env.LLM_API_KEY || "").trim(),
+    baseUrl: (process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1").replace(/\/$/, ""),
+    model: (process.env.LLM_MODEL || "openai/gpt-oss-120b").trim(),
+  },
   // Save places the AI mentions into the DB as unverified records. Off by default.
   autosaveAiPlaces: process.env.CHATBOT_AUTOSAVE === "true",
 };

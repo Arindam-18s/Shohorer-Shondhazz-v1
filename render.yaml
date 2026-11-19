@@ -15,9 +15,11 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
-      - key: GEMINI_API_KEY
+      - key: LLM_API_KEY
         sync: false
-      - key: GEMINI_MODEL
-        value: gemini-3.1-flash-lite,gemini-2.5-flash
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LLM_MODEL
+        value: openai/gpt-oss-120b
       - key: CHATBOT_AUTOSAVE
         value: "false"

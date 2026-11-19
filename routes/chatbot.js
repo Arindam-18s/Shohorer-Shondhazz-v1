@@ -212,53 +212,57 @@ async function autoSaveMentionedPlaces(botText, userMessage) {
   }
 }
 
-// ---------- Gemini ----------
-async function callGemini(systemPrompt, contents) {
-  if (!config.gemini.apiKey) {
-    const e = new Error("Chatbot is not configured (GEMINI_API_KEY missing).");
+// ---------- OpenAI ----------
+async function callLLM(systemPrompt, contents) {
+  if (!config.llm.apiKey) {
+    const e = new Error("Chatbot is not configured (LLM_API_KEY missing).");
     e.status = 503;
     throw e;
   }
-  let lastErr;
-  for (const model of config.gemini.models) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 25_000);
-      try {
-        const r = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": config.gemini.apiKey },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents,
-            generationConfig: { temperature: 0.7, maxOutputTokens: 1500 },
-          }),
-          signal: ctrl.signal,
-        });
-        const data = await r.json().catch(() => ({}));
-        if (r.ok) {
-          const text = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("");
-          if (text) return text;
-          lastErr = new Error(`Empty response from ${model}`);
-          break;
-        }
-        lastErr = new Error(data.error?.message || `Gemini HTTP ${r.status}`);
-        lastErr.status = r.status;
-        console.error(`[gemini] ${model} -> ${r.status}: ${lastErr.message}`);
-        if (r.status === 401 || r.status === 403) throw lastErr;
-        if (r.status === 400 || r.status === 404) break; // bad model name: try the next one
-        await new Promise((res) => setTimeout(res, 800 * (attempt + 1)));
-      } catch (err) {
-        if (err.status === 401 || err.status === 403) throw err;
-        lastErr = err.name === "AbortError" ? new Error("Gemini timed out") : err;
-        console.error(`[gemini] ${model} attempt ${attempt + 1} failed:`, lastErr.message);
-      } finally {
-        clearTimeout(timer);
-      }
+
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...contents.map((c) => ({
+      role: c.role === "model" ? "assistant" : "user",
+      content: c.parts.map((p) => p.text).join(""),
+    })),
+  ];
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 30_000);
+  try {
+    const r = await fetch(`${config.llm.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.llm.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.llm.model,
+        messages,
+        temperature: 0.7,
+        max_tokens: 1500,
+      }),
+      signal: ctrl.signal,
+    });
+
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const e = new Error(data.error?.message || `LLM HTTP ${r.status}`);
+      e.status = r.status;
+      console.error(`[llm] ${r.status}: ${e.message}`);
+      throw e;
     }
+
+    const text = data.choices?.[0]?.message?.content?.trim();
+    if (!text) throw new Error("Empty response from model");
+    return text;
+  } catch (err) {
+    if (err.name === "AbortError") throw new Error("Model request timed out");
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-  throw lastErr || new Error("No Gemini model available");
 }
 
 function buildSystemPrompt({ hasDbData, contextData, areaInfo }) {
@@ -335,7 +339,7 @@ router.post("/message", async (req, res) => {
       areaInfo,
     });
 
-    let botResponseText = await callGemini(systemPrompt, contents);
+    let botResponseText = await callLLM(systemPrompt, contents);
 
     // Use the database coordinates for known places.
     relevantAttractions.forEach((place) => {
