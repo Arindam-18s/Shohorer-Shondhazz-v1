@@ -1,9 +1,14 @@
-# শহরে'র Shondhaz — Kolkata City Guide & AI Route Planner
+# <img width="36" height="24" alt="logo" src="https://github.com/user-attachments/assets/3440520f-725a-4f23-883f-48d2091b2b70" /> শহরে'র Shondhazz  — Local Discovery, Social Feed & AI Route Mapper for Kolkata
 
 > **Your Evenings Sorted.** A full-stack local business discovery platform, social feed, and AI-powered interactive itinerary mapper built for Kolkata.
+<img width="1908" height="925" alt="Screenshot 2026-11-20 013419" src="https://github.com/user-attachments/assets/43d8faeb-2f37-4b0c-8912-18fd8889f427" />
+<img width="1919" height="969" alt="Screenshot 2026-11-20 014002" src="https://github.com/user-attachments/assets/0320d0d1-116b-432e-bddd-b2355ccf4625" />
+<img width="1917" height="976" alt="Screenshot 2026-11-20 014838" src="https://github.com/user-attachments/assets/f0543495-0eb1-4a3d-91a1-cfaf50c355a0" />
+<img width="1919" height="959" alt="Screenshot 2026-11-20 013451" src="https://github.com/user-attachments/assets/0abaa795-1543-4277-9e4e-fd2692a18d70" />
 
 🔗 **[Live Demo on Render](https://shohorer-shondhaz.onrender.com)** *(Note: Hosted on Render's free tier—please allow ~30 seconds for the initial cold-start wake-up)*  
-🩺 **System Health:** [`/healthz`]https://shohorer-shondhaz.onrender.com/healthz)
+
+🔗 🩺 **[System Health](https://shohorer-shondhaz.onrender.com/healthz)** <- System Health Check
 
 ---
 
@@ -114,8 +119,9 @@
 **Arindam Samadder**  
 Designed, architected, and developed end-to-end.
 
-- **GitHub:** [@your-username](https://github.com/your-username)
-- **Live Project:** [শহরে'র Shondhaz](https://your-service-name.onrender.com)
+- **PortFolio:** [@Arindam-S](https://portfolio-murex-phi-81.vercel.app/)
+- **LinkedIn:** [Arindam Samadder](https://www.linkedin.com/in/arindam-samadder)
+- **Live Project:** [শহরে'র Shondhaz](https://shohorer-shondhaz.onrender.com)
 
 ---
 
