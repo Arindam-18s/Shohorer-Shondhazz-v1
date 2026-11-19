@@ -1,0 +1,14 @@
+<section class="container my-5">
+  <!-- <h3 class="fw-bold mb-2">Walk the city, step by step</h3>
+  <p class="text-muted mb-3">Pick a trail to see the route between its stops.</p> -->
+  <div id="trailList" class="mb-2"></div>
+  <p id="trailInfo" class="small text-secondary mb-2"></p>
+  <div id="trailMap" style="height: 420px; border-radius: 12px;"></div>
+</section>
+
+<script src="/js/trail-builder.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    initTrailBuilder("trailMap", "trailList", "trailInfo");
+  });
+</script>

@@ -1,0 +1,118 @@
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  #routeMap { height: 340px; width: 100%; border-radius: 10px; }
+  .route-num {
+    background: #FF6B6B; color: #fff; font-weight: 700;
+    width: 24px; height: 24px; line-height: 24px; text-align: center;
+    border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+</style>
+
+<div class="position-fixed bottom-0 end-0 p-4" style="z-index: 1001;">
+  <button class="btn btn-success rounded-pill shadow" data-bs-toggle="collapse" data-bs-target="#mapPanel" id="mapButton">
+    📍 EXPLORE LOCATIONS & ROUTES
+  </button>
+
+  <div class="collapse mt-3" id="mapPanel">
+    <div class="card shadow" style="width: 550px; max-width: 90vw;">
+      <div class="card-header d-flex justify-content-between">
+        <span id="routeTitle">Route</span>
+        <button class="btn-close" data-bs-toggle="collapse" data-bs-target="#mapPanel"></button>
+      </div>
+      <div class="card-body">
+        <div id="routeMap"></div>
+        <p id="routeInfo" class="small text-secondary mt-2 mb-0"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const OSRM = "https://router.project-osrm.org/route/v1/driving/";
+  const DEFAULT_CENTER = [22.5726, 88.3639];
+
+  let map, layer, current = null, bounds = null;
+
+  // Road path from OSRM. Returns null on any failure so the caller can fall back.
+  async function fetchRoadPath(stops) {
+    const coords = stops.map((s) => `${s.longitude},${s.latitude}`).join(";");
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    try {
+      const res = await fetch(`${OSRM}${coords}?overview=full&geometries=geojson`, { signal: ctrl.signal });
+      const data = await res.json();
+      if (data.code !== "Ok" || !data.routes?.[0]) return null;
+      return data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]]);
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function draw(route) {
+    current = route;
+    layer.clearLayers();
+    document.getElementById("routeTitle").textContent = route.title || "Route";
+    const info = document.getElementById("routeInfo");
+    info.textContent = "Drawing route…";
+
+    const road = await fetchRoadPath(route.stops);
+    const latlngs = road || route.stops.map((s) => [s.latitude, s.longitude]);
+
+    L.polyline(latlngs, road
+      ? { color: "#0066ff", weight: 4, opacity: 0.85 }
+      : { color: "#0066ff", weight: 4, dashArray: "8 8" }
+    ).addTo(layer);
+
+    route.stops.forEach((s, i) => {
+      const icon = L.divIcon({ className: "", html: `<div class="route-num">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
+      const label = document.createElement("strong");
+      label.textContent = `${i + 1}. ${s.name}`; // textContent: names come from model output
+      L.marker([s.latitude, s.longitude], { icon }).bindPopup(label).addTo(layer);
+    });
+
+    bounds = L.latLngBounds(latlngs);
+    fitToCurrent();
+    info.textContent = road ? "Road route" : "Straight-line preview (routing unavailable)";
+  }
+
+  function fitToCurrent() {
+    if (bounds && bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30] });
+  }
+
+  // Called by chatbot.js. Opens the panel and redraws the same map in place.
+  window.showAiRoute = function (route) {
+    if (!route || !Array.isArray(route.stops) || route.stops.length < 2) return;
+    bootstrap.Collapse.getOrCreateInstance(document.getElementById("mapPanel")).show();
+    draw(route);
+  };
+
+  function init() {
+    map = L.map("routeMap").setView(DEFAULT_CENTER, 13);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(map);
+    layer = L.layerGroup().addTo(map);
+
+    document.getElementById("mapPanel").addEventListener("shown.bs.collapse", () => {
+      map.invalidateSize();
+      fitToCurrent();
+    });
+
+    // Default route: the first built-in trail. No database involved.
+    fetch("/our-top-picks/trails")
+      .then((r) => r.json())
+      .then((trails) => {
+        const first = trails.find((t) => t.stops?.length >= 2);
+        if (first) draw(first);
+      })
+      .catch((err) => console.error("Default route failed to load:", err));
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>

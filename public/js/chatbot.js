@@ -96,14 +96,9 @@ const generateBotResponse = async (incomingMessageDiv) => {
 
     messageElement.innerHTML = marked.parse(processedText);
 
-    if (data.savedItinerary && data.savedItinerary.stops?.length > 0) {
+    if (data.route && Array.isArray(data.route.stops) && data.route.stops.length >= 2) {
       if (typeof window.showAiRoute === "function") {
-        window.showAiRoute(data.savedItinerary);
-      } else {
-        const mapPanel = document.getElementById("mapPanel");
-        if (mapPanel && window.bootstrap) {
-          new bootstrap.Collapse(mapPanel, { show: true });
-        }
+        window.showAiRoute(data.route);
       }
     }
 
