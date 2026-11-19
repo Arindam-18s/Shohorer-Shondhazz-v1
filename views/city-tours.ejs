@@ -44,7 +44,6 @@
         <!-- MAP -->
         <!-- <div id="map"></div> -->
 
-        <%- include('partials/trail-builder') %>
         <!-- TOURS -->
         <div class="row g-4">
             <% if (tours && tours.length > 0) { %>
@@ -170,6 +169,7 @@
     </script>
 
     <!-- Load partials at the END in the correct order -->
+    <%- include('partials/trail-builder') %>
     <footer>
     <div class="container">
       <div class="row align-items-center">

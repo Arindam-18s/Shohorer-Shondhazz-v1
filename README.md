@@ -1,906 +1,158 @@
-```
-# 🌆 City Discovery & Local Explorer
+# শহরে'র Shondhaz - Your Evenings Sorted
 
-A full-stack local city discovery platform that helps users discover nearby businesses, explore what's happening around the city, find curated places, explore city tours, and interact with an AI-powered city assistant.
+A Kolkata city guide and local business discovery site. Users can sign up, share photo posts, comment and like, list businesses, browse curated top picks and tours, and ask an AI assistant for routes between places. Each route is drawn on an interactive map.
 
-The platform combines location-based discovery, user-generated content, curated recommendations, interactive maps, and AI assistance into a single web application.
+## Features
 
----
+- **Accounts:** sign up and sign in with a JWT stored in an httpOnly cookie. Passwords are salted and hashed.
+- **User posts:** share photos with captions, comment, like, and delete your own posts. The home page shows the latest posts.
+- **Businesses:** list a local business with a photo. Businesses are shown in a weekly list.
+- **Top picks:** curated Kolkata spots with photo carousels. A map panel draws a default trail using road routes from OSRM.
+- **City tours:** a grid of tour cards that link to Tripadvisor search pages.
+- **AI assistant:** asks an LLM (default `openai/gpt-oss-120b` via Groq) for suggestions. Places in its replies appear on the map, and numbered lists become routes drawn on the map, with no database writes.
 
-## ✨ Features
+## Tech stack
 
-### 🗺️ Interactive City Discovery
+- **Backend:** Node.js 20+, Express 5, Mongoose (MongoDB Atlas), EJS server-side rendering
+- **Frontend:** Bootstrap 5, Leaflet, OSRM routing, marked and DOMPurify for chat rendering
+- **Auth and uploads:** JWT in cookies, Multer for image uploads
 
-- Explore local businesses through an interactive Leaflet map.
-- View businesses based on their location.
-- Store and display latitude and longitude information.
-- Discover restaurants, cafés, shops, gyms, events, and other local places.
-- Location-based discovery architecture for future geospatial search.
-
-### 🏪 Local Business Discovery
-
-Businesses can be listed with:
-
-- Business name
-- Business type
-- Description
-- Special offers
-- Location
-- Latitude and longitude
-- Business image
-
-Users can browse businesses and discover places based on their interests and location.
-
----
-
-### 👀 What's Happening Right Now
-
-A user-generated local activity feed where users can share:
-
-- Posts
-- Images
-- Locations
-- Descriptions
-- Recent activities
-
-The homepage displays the latest posts to give users a real-time feel of what's happening around the city.
-
-Posts are retrieved from MongoDB and sorted by creation time.
-
----
-
-### 🔥 Our Top Picks
-
-A curated section containing recommended places around the city.
-
-Features include:
-
-- Image carousels
-- Place descriptions
-- Ratings
-- Categories
-- Recommendations
-- Save functionality
-
-Bootstrap cards and carousels are used to create a responsive discovery experience.
-
----
-
-### 🧭 City Tours
-
-The platform provides curated city exploration plans such as:
-
-- 🍛 Food tours
-- 🔥 Heritage walks
-- 🌆 City-light tours
-- 🌿 Relaxed neighbourhood tours
-
-Each tour can contain:
-
-- Title
-- Description
-- Price
-- Currency
-- Duration
-- Rating
-- Review count
-- Category
-- Group size
-- Image
-- Tour URL
-
-The application also exposes tour data through an API endpoint:
-
-```text
-GET /api/tours
-````
-
----
-
-## 🤖 AI City Discovery Assistant
-
-The application includes an AI-powered chatbot designed specifically for local city discovery.
-
-Users can ask questions such as:
-
-> "What can I do in North Kolkata this evening?"
-
-> "Where can I find Bengali food near College Street?"
-
-> "What is happening around Kumartuli?"
-
-> "Plan a 4-hour evening in North Kolkata."
-
-The assistant is designed to provide:
-
-* City recommendations
-* Itineraries
-* Local activity suggestions
-* Business recommendations
-* Tour suggestions
-* Location-based information
-
----
-
-## 🧠 AI Architecture
-
-The chatbot was initially implemented using the Gemini API and later designed to support local LLM inference through Ollama.
-
-### Current architecture
-
-```text
-User
-  ↓
-Chatbot UI
-  ↓
-Express API
-  ↓
-AI Model
-  ↓
-Response
-  ↓
-Chatbot UI
-```
-
-For database-aware responses, the architecture can be extended to:
-
-```text
-                    ┌───────────────┐
-                    │   MongoDB     │
-                    └───────┬───────┘
-                            │
-                            ↓
-User → Chatbot → AI → Database Tools
-                     ↓
-                Query Results
-                     ↓
-                    AI
-                     ↓
-              Final Response
-```
-
-This allows the AI to retrieve actual information from the application's database instead of relying entirely on its pretrained knowledge.
-
----
-
-## 🧩 Database-Aware AI
-
-The application is designed to allow the AI assistant to access application data through controlled backend functions.
-
-Potential tools include:
-
-```text
-search_businesses()
-get_business_details()
-search_events()
-get_latest_posts()
-search_city_tours()
-get_top_picks()
-search_nearby_businesses()
-get_business_offers()
-```
-
-This architecture prevents the AI model from directly accessing the database.
-
-Instead:
-
-```text
-AI
- ↓
-Requests a tool
- ↓
-Express executes the function
- ↓
-MongoDB query
- ↓
-Results returned to AI
- ↓
-AI generates response
-```
-
-This approach reduces hallucinated recommendations and allows responses to reflect the actual content available on the platform.
-
----
-
-# 📍 Location & Maps
-
-The application uses **Leaflet** for interactive maps.
-
-Leaflet is used for:
-
-* Displaying city locations
-* Showing businesses
-* Selecting locations
-* Capturing latitude/longitude
-* Supporting future nearby-business discovery
-
-A typical location flow is:
-
-```text
-User selects location on map
-          ↓
-Leaflet
-          ↓
-Latitude + Longitude
-          ↓
-Express
-          ↓
-MongoDB
-```
-
-The project can later use MongoDB geospatial queries such as `$near` to retrieve businesses within a specific radius.
-
----
-
-# 👤 User Features
-
-Users can:
-
-* Register
-* Log in
-* Browse local businesses
-* Explore city recommendations
-* View user posts
-* Create posts
-* Upload images
-* Select locations using Leaflet
-* Explore city tours
-* Interact with the AI assistant
-* Save recommended places
-
----
-
-# 🏢 Business Features
-
-Businesses can provide:
-
-* Business information
-* Business type
-* Description
-* Special offers
-* Location
-* Images
-* Events and upcoming activities
-
-The architecture separates normal users from business accounts using roles.
-
-Example:
-
-```js
-role: {
-    type: String,
-    enum: ["USER", "BUSINESS"]
-}
-```
-
----
-
-# 📸 Image Uploads
-
-User-generated content supports image uploads using **Multer**.
-
-Uploaded images are stored under:
-
-```text
-/public/uploads/
-```
-
-For example:
-
-```text
-public/
-└── uploads/
-    └── user-posts/
-        ├── image1.jpg
-        ├── image2.jpg
-        └── image3.jpg
-```
-
-Images can then be served through Express static middleware.
-
----
-
-# 🔐 Authentication
-
-Authentication is handled through cookies and middleware.
-
-The application uses an authentication cookie:
-
-```text
-token
-```
-
-Authentication middleware checks the token before allowing access to protected functionality.
-
-The general flow is:
-
-```text
-Login
- ↓
-Generate authentication token
- ↓
-Store token in cookie
- ↓
-Authentication middleware
- ↓
-Identify user
- ↓
-Protected route
-```
-
----
-
-# 🗄️ Database
-
-The application uses **MongoDB** as its primary database.
-
-MongoDB stores information such as:
-
-* Users
-* Businesses
-* User posts
-* Locations
-* Offers
-* Tours
-* Events
-* Other discovery-related data
-
-MongoDB is accessed through **Mongoose**.
-
----
-
-# 🏗️ Technology Stack
-
-## Frontend
-
-* HTML5
-* CSS3
-* JavaScript
-* EJS
-* Bootstrap
-* Leaflet
-* Emoji Picker
-
-## Backend
-
-* Node.js
-* Express.js
-* REST APIs
-* Cookie-based authentication
-* Multer
-
-## Database
-
-* MongoDB
-* Mongoose
-
-## AI
-
-* Google Gemini API
-* Ollama
-* Llama 3.2
-
-## Maps
-
-* Leaflet
-* OpenStreetMap-compatible map layers
-
----
-
-# 📁 Project Structure
-
-A typical structure is:
-
-```text
-project/
-│
-├── controllers/
-│
-├── middleware/
-│
-├── models/
-│   ├── user.js
-│   ├── business.js
-│   ├── userPosts.js
-│   └── ...
-│
-├── routes/
-│   ├── users.js
-│   ├── businesses.js
-│   ├── user-posts.js
-│   ├── city-tours.js
-│   ├── chatbot.js
-│   └── ...
-│
-├── services/
-│
-├── utils/
-│
-├── public/
-│   ├── css/
-│   ├── js/
-│   ├── images/
-│   └── uploads/
-│       └── user-posts/
-│
-├── views/
-│   ├── index.ejs
-│   ├── businesses.ejs
-│   ├── city-tours.ejs
-│   ├── happening-now.ejs
-│   └── ...
-│
-├── .env
-├── index.js
-├── package.json
-└── README.md
-```
-
----
-
-# 🔄 Application Flow
-
-```text
-                    CITY DISCOVERY PLATFORM
-                              │
-             ┌────────────────┼────────────────┐
-             │                │                │
-             ↓                ↓                ↓
-        Businesses       User Posts       City Tours
-             │                │                │
-             └────────────────┼────────────────┘
-                              ↓
-                          MongoDB
-                              │
-                              ↓
-                         Express API
-                              │
-              ┌───────────────┼───────────────┐
-              ↓               ↓               ↓
-           EJS UI          Leaflet          AI
-                              │               │
-                              └───────┬───────┘
-                                      ↓
-                              City Assistant
-```
-
----
-
-# ⚙️ Installation
-
-## 1. Clone the repository
-
-```bash
-git clone <your-repository-url>
-```
-
-Move into the project:
-
-```bash
-cd <project-folder>
-```
-
----
-
-## 2. Install dependencies
-
-```bash
-npm install
-```
-
----
-
-## 3. Configure environment variables
-
-Create a `.env` file:
-
-```env
-MONGODB_URI=your_mongodb_connection_string
-GEMINI_API_KEY=your_gemini_api_key
-```
-
-Never commit `.env` to GitHub.
-
-Add it to `.gitignore`:
-
-```text
-.env
-node_modules/
-```
-
----
-
-## 4. Start MongoDB
-
-Make sure your MongoDB server is running.
-
----
-
-## 5. Start the application
-
-```bash
-npm start
-```
-
-or, if using nodemon:
-
-```bash
-npm run dev
-```
-
-The application should then be available at:
-
-```text
-http://localhost:3000
-```
-
----
-
-# 🔌 Important API Routes
-
-### Authentication
-
-```text
-POST /users/signin
-POST /users/signup
-GET  /users/logout
-```
-
-### Businesses
-
-```text
-GET  /businesses
-POST /businesses
-```
-
-### User Posts
-
-```text
-POST /user-posts
-GET  /user-posts/happening-now
-```
-
-### City Tours
-
-```text
-GET /city-tours
-GET /api/tours
-```
-
-### AI Chatbot
-
-```text
-POST /chatbot/message
-```
-
----
-
-# 🤖 Chatbot Request Flow
-
-The chatbot sends conversation history to the backend.
-
-Example:
-
-```json
-{
-    "contents": [
-        {
-            "role": "user",
-            "parts": [
-                {
-                    "text": "What should I do in North Kolkata?"
-                }
-            ]
-        }
-    ]
-}
-```
-
-The Express backend forwards the request to the AI model.
-
-The response is then returned to the frontend.
-
----
-
-# 🧠 AI Context Strategy
-
-The chatbot can use multiple layers of context.
-
-### Layer 1 — Conversation Context
-
-Previous messages in the current conversation.
-
-```text
-User:
-I want food.
-
-AI:
-What type?
-
-User:
-Bengali.
-
-AI:
-...
-```
-
-### Layer 2 — Application Context
-
-Information stored in MongoDB:
-
-```text
-Businesses
-Posts
-Tours
-Events
-Offers
-```
-
-### Layer 3 — Location Context
-
-Information from Leaflet:
-
-```text
-Latitude
-Longitude
-Nearby businesses
-```
-
-### Layer 4 — External Knowledge
-
-AI-generated or externally retrieved information when the application database does not contain the required information.
-
----
-
-# 🎯 Example Use Cases
-
-### Discover places
-
-```text
-"Find me a café near College Street."
-```
-
-### Explore activities
-
-```text
-"What is happening around Kumartuli?"
-```
-
-### Create itineraries
-
-```text
-"Create a 5-hour evening plan around North Kolkata."
-```
-
-### Find offers
-
-```text
-"Are there any offers available nearby?"
-```
-
-### Discover tours
-
-```text
-"Show me food-focused city tours."
-```
-
----
-
-# 📊 Future Improvements
-
-The project can be extended with:
-
-### 🔎 Advanced Search
-
-* Full-text search
-* Category filters
-* Price filters
-* Rating filters
-* Distance filters
-
-### 📍 Geospatial Search
-
-Use MongoDB geospatial indexes:
-
-```text
-User location
-     ↓
-MongoDB $near
-     ↓
-Businesses within radius
-```
-
-### 🤖 AI Function Calling
-
-Allow the AI to dynamically call:
-
-```text
-search_businesses
-search_events
-search_tours
-search_posts
-search_nearby
-```
-
-### 🧠 RAG
-
-For large amounts of unstructured city information:
-
-```text
-City information
-       ↓
-Embeddings
-       ↓
-Vector database
-       ↓
-Semantic retrieval
-       ↓
-AI
-```
-
-### 📱 Responsive UI
-
-Improve mobile-first support for:
-
-* Maps
-* Business cards
-* Chatbot
-* Discovery feed
-* City tours
-
-### ⭐ Reviews & Ratings
-
-Add:
-
-* User reviews
-* Ratings
-* Likes
-* Comments
-* Impressions
-
----
-
-# 🛡️ Security Considerations
-
-The application should:
-
-* Keep API keys in environment variables.
-* Never expose API keys in frontend JavaScript.
-* Validate uploaded files.
-* Limit upload sizes.
-* Validate user input.
-* Protect authenticated routes.
-* Sanitize user-generated content.
-* Restrict AI database tools to safe operations.
-* Avoid exposing sensitive user information to AI models.
-
----
-
-# 🚀 Why This Project?
-
-Traditional city discovery applications usually separate:
-
-* Maps
-* Business listings
-* Events
-* Social feeds
-* Travel recommendations
-
-This project attempts to combine these experiences into one platform.
-
-Instead of simply browsing listings, users can interact with the application conversationally and discover places based on:
-
-```text
-Location
-+
-Interests
-+
-Current activity
-+
-Business information
-+
-Tours
-+
-AI recommendations
-```
-
----
-
-# 🧑‍💻 Learning Outcomes
-
-This project demonstrates practical experience with:
-
-* Full-stack web development
-* REST API development
-* MVC-style application architecture
-* MongoDB database design
-* Mongoose ODM
-* Authentication
-* File uploads
-* Dynamic EJS rendering
-* Bootstrap responsive UI
-* Interactive maps
-* Geolocation concepts
-* AI API integration
-* Local LLM integration
-* Database-aware AI architecture
-* API design
-* Asynchronous JavaScript
-* Backend middleware
-
----
-
-# 🔮 Future Vision
-
-The long-term goal is to evolve the platform into an intelligent local discovery assistant.
-
-Instead of simply asking:
-
-> "Where should I go?"
-
-users could say:
-
-> "I have ₹1500, I'm near College Street, I like Bengali food and old architecture, and I have four hours."
-
-The system could combine:
-
-```text
-User preferences
-       +
-Current location
-       +
-Business database
-       +
-Events
-       +
-Tours
-       +
-Offers
-       +
-AI reasoning
-       ↓
-Personalized city experience
-```
-
----
-
-## 👨‍💻 Author
-
-**Your Name**
-
-Built as a full-stack project exploring local discovery, geospatial applications, AI assistants, and modern web application architecture.
-
----
-
-## ⭐ Project Highlights
-
-```text
-MongoDB        → Persistent application data
-Express.js     → Backend APIs & routing
-Node.js        → Server-side runtime
-EJS            → Dynamic server-rendered UI
-Bootstrap      → Responsive interface
-Leaflet        → Interactive maps
-Multer         → Image uploads
-Gemini/Ollama  → AI assistant
-Mongoose       → MongoDB integration
-```
-
----
-
-## 📌 Status
-
-🚧 **Active Development**
-
-The core local discovery, business listing, user-post, city-tour, map, and AI chatbot functionality is being developed incrementally.
+## Project structure
 
 ```
+index.js                 App entry point, routes, health check
+config/
+  index.js               Environment configuration (the only place env vars are read)
+  db.js                  MongoDB connection and collection setup
+models/                  Mongoose schemas (users, posts, businesses, chatbot data)
+routes/                  Express routers (user, user-posts, businesses, chatbot, ...)
+middlewares/             Cookie authentication
+sevices/                 JWT helpers
+data/kolkata-trails.js   Built-in trails and stops (no database needed)
+views/                   EJS pages and partials
+public/                  CSS, JS, images, and uploaded files
+```
 
-### For your GitHub specifically
+## Requirements
 
-I would **not** call this a "basic local business discovery website" in the README. The stronger positioning is:
+- Node.js 20 or newer
+- A MongoDB Atlas cluster (the free M0 tier is fine)
+- An API key for an OpenAI-compatible LLM provider. The default is [Groq](https://console.groq.com).
 
-> **AI-powered local city discovery platform combining location-based business discovery, user-generated activity feeds, curated city tours, interactive maps, and a database-aware AI assistant.**
+## Local setup
 
-That accurately reflects what you've actually built and gives the project much more weight when a recruiter scans the repository.
+1. Clone the repo and install dependencies:
+   ```bash
+   git clone <your-repo-url>
+   cd Local-Buissness-discovery
+   npm install
+   ```
+
+2. Create your environment file:
+   ```bash
+   cp .env.example .env        # Windows PowerShell: copy .env.example .env
+   ```
+   Fill in the values (see the table below).
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   Open http://localhost:3005.
+
+4. Check the startup log. You should see:
+   ```
+   [mongo] connected to database "ShohureDB" on ...
+   [server] listening on port 3005
+   ```
+
+## Environment variables
+
+| Variable | Required | Example | Purpose |
+|---|---|---|---|
+| `MONGODB_URI` | Yes | `mongodb+srv://user:pass@cluster.mongodb.net/ShohureDB?retryWrites=true&w=majority` | Atlas connection string. Include the database name before the `?`. |
+| `JWT_SECRET` | Yes in production | a long random string | Signs login cookies. Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`. |
+| `LLM_API_KEY` | For the chatbot | `gsk_...` | API key for the LLM provider. |
+| `LLM_BASE_URL` | No | `https://api.groq.com/openai/v1` | OpenAI-compatible endpoint. Use `https://openrouter.ai/api/v1` for OpenRouter. |
+| `LLM_MODEL` | No | `openai/gpt-oss-120b` | Model name, as the provider lists it. |
+| `CHATBOT_AUTOSAVE` | No | `false` | If `true`, places the AI mentions are saved to the database as unverified records. |
+| `PORT` | No | `3005` | Port to listen on. Render sets this automatically. |
+| `NODE_ENV` | No | `development` | Set to `production` when deployed. Enables stricter checks and secure cookies. |
+
+If `MONGODB_URI` is missing, the app refuses to start and names the variable. If `JWT_SECRET` is missing in production, it does the same.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm start` | Runs the app once, as production does |
+| `npm run dev` | Runs the app and restarts on file changes |
+
+## Health check
+
+`GET /healthz` returns `{"ok":true}` when the database is connected and `503` when it isn't. Render uses this route to check the service.
+
+## Deploying to Render
+
+The repo includes a `render.yaml` blueprint.
+
+1. Push the repo to GitHub.
+2. In Render, choose **New → Blueprint** and select the repo.
+3. When prompted, enter `MONGODB_URI`, `LLM_API_KEY`, and any other values you want to set. `JWT_SECRET` is generated for you.
+4. Deploy, then check the logs for `connected to database "ShohureDB"`.
+5. Open `https://<your-service>.onrender.com/healthz` to confirm the service is up.
+
+Before the first deploy, set MongoDB Atlas > Network Access to allow `0.0.0.0/0`. Render's IP addresses change, so a narrower rule will block the connection.
+
+## Troubleshooting
+
+- **`bad auth : authentication failed`**: the username or password in `MONGODB_URI` is wrong, or a second env file (such as `.env.local`) is overriding `.env`. Special characters in the password must be URL-encoded.
+- **Data appears in a database called `test`**: the URI has no database name. Add `/ShohureDB` before the `?`.
+- **The chatbot says it isn't configured**: `LLM_API_KEY` is missing.
+- **`[llm] 401`**: the LLM key is invalid. **`[llm] 404`**: the model name or base URL doesn't match the provider.
+- **Collections don't show in Atlas**: the app creates them on startup, so check that the URI points at the database you're looking at.
+- **Uploads disappear after a redeploy**: Render's free plan has no persistent disk. Images already committed in `public/uploads` are kept.
+- **The first request is slow**: the free Render plan sleeps after about 15 minutes without traffic.
+
+## Known limitations
+
+- Uploaded images are stored on the local disk. Use object storage (Cloudinary, S3) for anything permanent.
+- Routing uses OSRM's public demo server, which only serves the driving profile and has no uptime guarantee. If it fails, routes are drawn as dashed straight lines.
+- Tour prices and ratings on the city-tours page are placeholders, and the photos come from Unsplash.
+- Chatbot rate limiting is per instance and resets on restart.
+
+## Security notes
+
+- Never commit `.env`. It's listed in `.gitignore`.
+- Rotate any key that has been pasted into a chat, a screenshot, or a commit.
+- Set `JWT_SECRET` to a long random value in production. Changing it signs everyone out.
+
+## Author
+
+**Arindam Samadder**
+
+Designed, developed and managed by Arindam Samadder. Feedback and contributions are welcome through GitHub issues and pull requests.
+
+## License
+
+This project is licensed under the ISC License. See the [`LICENSE`](LICENSE) file for the full text.
+
+To make the license official, add a file named `LICENSE` to the project root with this text, replacing the year and name:
+
+```
+ISC License
+
+Copyright (c) 2026 Arindam Samadder
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
