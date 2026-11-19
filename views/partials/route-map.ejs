@@ -7,6 +7,15 @@
     width: 24px; height: 24px; line-height: 24px; text-align: center;
     border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3);
   }
+  .place-label {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #333;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  }
 </style>
 
 <div class="position-fixed bottom-0 end-0 p-4" style="z-index: 1001;">
@@ -52,40 +61,73 @@
     }
   }
 
+  function addMarkers(stops) {
+    stops.forEach((s) => {
+      const marker = L.marker([s.latitude, s.longitude]).addTo(layer);
+
+      // textContent, not HTML: names come from model output.
+      const name = document.createElement("span");
+      name.textContent = s.name;
+      marker.bindTooltip(name, {
+        permanent: true,
+        direction: "top",
+        offset: [0, -30],
+        className: "place-label",
+      });
+
+      const popup = document.createElement("strong");
+      popup.textContent = s.name;
+      marker.bindPopup(popup);
+
+      // A single place opens straight away, so the name is visible without a click.
+      if (stops.length === 1) marker.openPopup();
+    });
+  }
+
+  function fitToCurrent() {
+    if (!current || !map) return;
+    if (current.stops.length === 1) {
+      const s = current.stops[0];
+      map.setView([s.latitude, s.longitude], 15);
+    } else if (bounds && bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+  }
+
   async function draw(route) {
     current = route;
     layer.clearLayers();
     document.getElementById("routeTitle").textContent = route.title || "Route";
     const info = document.getElementById("routeInfo");
+    const stops = route.stops;
+
+    if (stops.length === 1) {
+      bounds = null;
+      addMarkers(stops);
+      info.textContent = stops[0].name;
+      fitToCurrent();
+      return;
+    }
+
     info.textContent = "Drawing route…";
+    const road = await fetchRoadPath(stops);
+    if (current !== route) return; // a newer route was requested while this one was loading
 
-    const road = await fetchRoadPath(route.stops);
-    const latlngs = road || route.stops.map((s) => [s.latitude, s.longitude]);
-
+    const latlngs = road || stops.map((s) => [s.latitude, s.longitude]);
     L.polyline(latlngs, road
       ? { color: "#0066ff", weight: 4, opacity: 0.85 }
       : { color: "#0066ff", weight: 4, dashArray: "8 8" }
     ).addTo(layer);
-
-    route.stops.forEach((s, i) => {
-      const icon = L.divIcon({ className: "", html: `<div class="route-num">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
-      const label = document.createElement("strong");
-      label.textContent = `${i + 1}. ${s.name}`; // textContent: names come from model output
-      L.marker([s.latitude, s.longitude], { icon }).bindPopup(label).addTo(layer);
-    });
+    addMarkers(stops);
 
     bounds = L.latLngBounds(latlngs);
     fitToCurrent();
     info.textContent = road ? "Road route" : "Straight-line preview (routing unavailable)";
   }
 
-  function fitToCurrent() {
-    if (bounds && bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30] });
-  }
-
-  // Called by chatbot.js. Opens the panel and redraws the same map in place.
+  // Called by chatbot.js on every reply that contains places. Opens the panel and redraws in place.
   window.showAiRoute = function (route) {
-    if (!route || !Array.isArray(route.stops) || route.stops.length < 2) return;
+    if (!route || !Array.isArray(route.stops) || route.stops.length < 1) return;
     bootstrap.Collapse.getOrCreateInstance(document.getElementById("mapPanel")).show();
     draw(route);
   };
@@ -103,7 +145,7 @@
       fitToCurrent();
     });
 
-    // Default route: the first built-in trail. No database involved.
+    // The only default route. It is drawn once, on the first page load, from built-in data.
     fetch("/our-top-picks/trails")
       .then((r) => r.json())
       .then((trails) => {
