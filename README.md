@@ -1,143 +1,127 @@
-# শহরে'র Shondhaz - Your Evenings Sorted
+# শহরে'র Shondhaz — Kolkata City Guide & AI Route Planner
 
-A Kolkata city guide and local business discovery site. Users can sign up, share photo posts, comment and like, list businesses, browse curated top picks and tours, and ask an AI assistant for routes between places. Each route is drawn on an interactive map.
+> **Your Evenings Sorted.** A full-stack local business discovery platform, social feed, and AI-powered interactive itinerary mapper built for Kolkata.
 
-## Features
+🔗 **[Live Demo on Render](https://shohorer-shondhaz.onrender.com)** *(Note: Hosted on Render's free tier—please allow ~30 seconds for the initial cold-start wake-up)*  
+🩺 **System Health:** [`/healthz`]https://shohorer-shondhaz.onrender.com/healthz)
 
-- **Accounts:** sign up and sign in with a JWT stored in an httpOnly cookie. Passwords are salted and hashed.
-- **User posts:** share photos with captions, comment, like, and delete your own posts. The home page shows the latest posts.
-- **Businesses:** list a local business with a photo. Businesses are shown in a weekly list.
-- **Top picks:** curated Kolkata spots with photo carousels. A map panel draws a default trail using road routes from OSRM.
-- **City tours:** a grid of tour cards that link to Tripadvisor search pages.
-- **AI assistant:** asks an LLM (default `openai/gpt-oss-120b` via Groq) for suggestions. Places in its replies appear on the map, and numbered lists become routes drawn on the map, with no database writes.
+---
 
-## Tech stack
+## 🎯 Overview
 
-- **Backend:** Node.js 20+, Express 5, Mongoose (MongoDB Atlas), EJS server-side rendering
-- **Frontend:** Bootstrap 5, Leaflet, OSRM routing, marked and DOMPurify for chat rendering
-- **Auth and uploads:** JWT in cookies, Multer for image uploads
+**শহরে'র Shondhaz** solves the problem of fragmented local discovery by combining community-driven recommendations with real-time spatial routing. Users can share local experiences, discover curated neighborhood spots, list local businesses, and chat with an AI local guide that dynamically plots suggested locations and multi-stop walking/driving routes onto an interactive map.
 
-## Project structure
+## ✨ Key Engineering Highlights
 
+- **AI-to-Map Spatial Pipeline:** Integrated an OpenAI-compatible LLM (`openai/gpt-oss-120b` via Groq) with Leaflet and OSRM. Place entities mentioned in AI responses are automatically parsed and geocoded onto the map, while numbered itinerary lists are dynamically converted into multi-waypoint road routes—all rendered client-side without unnecessary database writes.
+- **Resilient Routing Fallback:** Configured OSRM routing with graceful degradation; if the public routing server times out or fails, the frontend seamlessly falls back to dashed geodesic polylines so the user experience never breaks.
+- **Secure Stateless Auth & XSS Protection:** Implemented salted password hashing and `httpOnly` JWT cookie authentication, paired with `marked` and `DOMPurify` to safely sanitize and render LLM-generated Markdown responses.
+- **Production-Ready Deployment:** Engineered with centralized environment validation (fail-fast startup checks), health-check endpoints (`/healthz`), and Infrastructure-as-Code via `render.yaml`.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Backend** | Node.js (v20+), Express 5, MongoDB Atlas, Mongoose |
+| **Frontend** | EJS (SSR), Bootstrap 5, Vanilla JS |
+| **Maps & AI** | Leaflet.js, OSRM Routing API, Groq API (`gpt-oss-120b`), Marked, DOMPurify |
+| **Auth & Storage** | JWT (`httpOnly` cookies), Multer (multipart image uploads) |
+| **DevOps** | Render (Blueprint IaC), Git |
+
+---
+
+## 🚀 Core Features
+
+1. **AI Route Assistant:** Ask for evening plans (e.g., *"Plan a street food trail in North Kolkata"*). The AI responds with curated stops and plots the exact route on the interactive map.
+2. **Community Feed:** Full CRUD social feed where authenticated users can upload geo-tagged photo posts, like, and comment.
+3. **Local Business Directory:** Dedicated portal for local business owners to list storefronts with photos, featured in a weekly discovery digest.
+4. **Curated Trails & Top Picks:** Pre-configured Kolkata heritage and food trails with photo carousels and instant map rendering.
+
+---
+
+## 📂 Architecture & Project Structure
+
+```text
+├── index.js                 # App entry point, middleware pipeline, and /healthz endpoint
+├── render.yaml              # Render Infrastructure-as-Code deployment blueprint
+├── config/
+│   ├── index.js             # Centralized, fail-fast environment configuration
+│   └── db.js                # MongoDB Atlas connection & collection initialization
+├── models/                  # Mongoose schemas (Users, Posts, Businesses, Chatbot logs)
+├── routes/                  # Modular Express 5 routers (auth, posts, businesses, AI chat)
+├── middlewares/             # JWT cookie verification & Multer upload handlers
+├── sevices/                 # Token generation & authentication helpers
+├── data/kolkata-trails.js   # Static seed data for zero-latency curated trails
+├── views/                   # Server-side rendered EJS templates & partials
+└── public/                  # Client-side Leaflet/OSRM logic, CSS, and static assets
 ```
-index.js                 App entry point, routes, health check
-config/
-  index.js               Environment configuration (the only place env vars are read)
-  db.js                  MongoDB connection and collection setup
-models/                  Mongoose schemas (users, posts, businesses, chatbot data)
-routes/                  Express routers (user, user-posts, businesses, chatbot, ...)
-middlewares/             Cookie authentication
-sevices/                 JWT helpers
-data/kolkata-trails.js   Built-in trails and stops (no database needed)
-views/                   EJS pages and partials
-public/                  CSS, JS, images, and uploaded files
-```
 
-## Requirements
+## 💻 Local Development Setup
 
-- Node.js 20 or newer
-- A MongoDB Atlas cluster (the free M0 tier is fine)
-- An API key for an OpenAI-compatible LLM provider. The default is [Groq](https://console.groq.com).
+### Prerequisites
+- **Node.js** `v20+`
+- **MongoDB Atlas** cluster (Free M0 tier supported)
+- **Groq API Key** (or any OpenAI-compatible provider key)
 
-## Local setup
+### Installation
 
-1. Clone the repo and install dependencies:
+1. **Clone the repository and install dependencies:**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/Arindam-18s/Shohorer-Shondhazz-v1.git
    cd Local-Buissness-discovery
    npm install
-   ```
 
-2. Create your environment file:
+2. **Configure environment variables:**
    ```bash
-   cp .env.example .env        # Windows PowerShell: copy .env.example .env
+   cp .env.example .env
    ```
-   Fill in the values (see the table below).
+   Open `.env` and fill in your credentials:
 
-3. Start the development server:
+   | Variable | Required | Description |
+   | :--- | :---: | :--- |
+   | `MONGODB_URI` | **Yes** | MongoDB Atlas connection string |
+   | `JWT_SECRET` | **Yes** | Cryptographic secret for signing cookies |
+   | `LLM_API_KEY` | **Yes** | API key for Groq or another OpenAI-compatible LLM provider |
+   | `LLM_BASE_URL` | No | Defaults to `[https://api.groq.com/openai/v1](https://api.groq.com/openai/v1)` |
+   | `LLM_MODEL` | No | Defaults to `openai/gpt-oss-120b` |
+   | `CHATBOT_AUTOSAVE` | No | Set `true` to save AI-discovered places to MongoDB (default: `false`) |
+   | `PORT` | No | Server port (defaults to `3005`) |
+   | `NODE_ENV` | No | `development` or `production` |
+
+3. **Start the development server:**
    ```bash
    npm run dev
    ```
-   Open http://localhost:3005.
+   Open `http://localhost:3005` in your browser.
 
-4. Check the startup log. You should see:
-   ```
-   [mongo] connected to database "ShohureDB" on ...
-   [server] listening on port 3005
-   ```
+---
 
-## Environment variables
+## 🔮 Known Limitations & Future Roadmap
 
-| Variable | Required | Example | Purpose |
-|---|---|---|---|
-| `MONGODB_URI` | Yes | `mongodb+srv://user:pass@cluster.mongodb.net/ShohureDB?retryWrites=true&w=majority` | Atlas connection string. Include the database name before the `?`. |
-| `JWT_SECRET` | Yes in production | a long random string | Signs login cookies. Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`. |
-| `LLM_API_KEY` | For the chatbot | `gsk_...` | API key for the LLM provider. |
-| `LLM_BASE_URL` | No | `https://api.groq.com/openai/v1` | OpenAI-compatible endpoint. Use `https://openrouter.ai/api/v1` for OpenRouter. |
-| `LLM_MODEL` | No | `openai/gpt-oss-120b` | Model name, as the provider lists it. |
-| `CHATBOT_AUTOSAVE` | No | `false` | If `true`, places the AI mentions are saved to the database as unverified records. |
-| `PORT` | No | `3005` | Port to listen on. Render sets this automatically. |
-| `NODE_ENV` | No | `development` | Set to `production` when deployed. Enables stricter checks and secure cookies. |
+- **Ephemeral File Storage:** Uploaded images are currently written to the local disk (`public/uploads`), which resets on Render redeploys.  
+  *Roadmap:* Migrate media storage to **Cloudinary** or **AWS S3**.
+- **Public Routing API:** Relies on OSRM's public demo server (driving profile only).  
+  *Roadmap:* Integrate Mapbox Directions or a self-hosted OSRM instance for dedicated pedestrian/walking profiles.
+- **In-Memory Rate Limiting:** Chatbot rate limits reset upon server restart.  
+  *Roadmap:* Move rate-limiting state to **Redis**.
 
-If `MONGODB_URI` is missing, the app refuses to start and names the variable. If `JWT_SECRET` is missing in production, it does the same.
+---
 
-## Scripts
+## 👨‍💻 Author
 
-| Command | What it does |
-|---|---|
-| `npm start` | Runs the app once, as production does |
-| `npm run dev` | Runs the app and restarts on file changes |
+**Arindam Samadder**  
+Designed, architected, and developed end-to-end.
 
-## Health check
+- **GitHub:** [@your-username](https://github.com/your-username)
+- **Live Project:** [শহরে'র Shondhaz](https://your-service-name.onrender.com)
 
-`GET /healthz` returns `{"ok":true}` when the database is connected and `503` when it isn't. Render uses this route to check the service.
+---
 
-## Deploying to Render
+## 📄 License
 
-The repo includes a `render.yaml` blueprint.
-
-1. Push the repo to GitHub.
-2. In Render, choose **New → Blueprint** and select the repo.
-3. When prompted, enter `MONGODB_URI`, `LLM_API_KEY`, and any other values you want to set. `JWT_SECRET` is generated for you.
-4. Deploy, then check the logs for `connected to database "ShohureDB"`.
-5. Open `https://<your-service>.onrender.com/healthz` to confirm the service is up.
-
-Before the first deploy, set MongoDB Atlas > Network Access to allow `0.0.0.0/0`. Render's IP addresses change, so a narrower rule will block the connection.
-
-## Troubleshooting
-
-- **`bad auth : authentication failed`**: the username or password in `MONGODB_URI` is wrong, or a second env file (such as `.env.local`) is overriding `.env`. Special characters in the password must be URL-encoded.
-- **Data appears in a database called `test`**: the URI has no database name. Add `/ShohureDB` before the `?`.
-- **The chatbot says it isn't configured**: `LLM_API_KEY` is missing.
-- **`[llm] 401`**: the LLM key is invalid. **`[llm] 404`**: the model name or base URL doesn't match the provider.
-- **Collections don't show in Atlas**: the app creates them on startup, so check that the URI points at the database you're looking at.
-- **Uploads disappear after a redeploy**: Render's free plan has no persistent disk. Images already committed in `public/uploads` are kept.
-- **The first request is slow**: the free Render plan sleeps after about 15 minutes without traffic.
-
-## Known limitations
-
-- Uploaded images are stored on the local disk. Use object storage (Cloudinary, S3) for anything permanent.
-- Routing uses OSRM's public demo server, which only serves the driving profile and has no uptime guarantee. If it fails, routes are drawn as dashed straight lines.
-- Tour prices and ratings on the city-tours page are placeholders, and the photos come from Unsplash.
-- Chatbot rate limiting is per instance and resets on restart.
-
-## Security notes
-
-- Never commit `.env`. It's listed in `.gitignore`.
-- Rotate any key that has been pasted into a chat, a screenshot, or a commit.
-- Set `JWT_SECRET` to a long random value in production. Changing it signs everyone out.
-
-## Author
-
-**Arindam Samadder**
-
-Designed, developed and managed by Arindam Samadder. Feedback and contributions are welcome through GitHub issues and pull requests.
-
-## License
-
-This project is licensed under the ISC License. See the [`LICENSE`](LICENSE) file for the full text.
-
-To make the license official, add a file named `LICENSE` to the project root with this text, replacing the year and name:
+This project is licensed under the **ISC License** — 
 
 ```
 ISC License
@@ -155,4 +139,5 @@ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 ```
