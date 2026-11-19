@@ -14,7 +14,7 @@ const IMG = {
   holiday: "https://images.unsplash.com/photo-1668151133903-72da87fe1f40?w=600&auto=format&fit=crop&q=60",
   artClasses: "https://plus.unsplash.com/premium_photo-1704974610818-f8144dcf9549?w=600&auto=format&fit=crop&q=60",
   historicSites: "https://images.unsplash.com/photo-1640281689804-0ccb69ff6d77?w=600&auto=format&fit=crop&q=60",
-  tuktuk: "https://images.unsplash.com/photo-1620619523274-1296cb347cb5?q=80&w=600&auto=format&fit=crop",
+  tuktuk: "https://images.unsplash.com/photo-1532681445580-8777da6822d6?q=80&w=600&auto=format&fit=crop",
   walking: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=600&auto=format&fit=crop",
   sacred: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?q=80&w=600&auto=format&fit=crop",
   food: "https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=600&auto=format&fit=crop",
